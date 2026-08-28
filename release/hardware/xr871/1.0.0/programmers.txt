@@ -1,0 +1,14 @@
+# XR871 Arduino Programmers Configuration
+
+##############################################################
+phoenixMC.name=PhoenixMC (Serial)
+phoenixMC.communication=serial
+phoenixMC.protocol=serial
+phoenixMC.program.tool=phoenixMC
+phoenixMC.program.extra_params=
+
+##############################################################
+jlink.name=J-Link (SWD)
+jlink.communication=swd
+jlink.protocol=jlink
+jlink.program.tool=jlink

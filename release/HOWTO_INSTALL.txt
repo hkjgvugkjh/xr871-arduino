@@ -1,0 +1,140 @@
+HOWTO_INSTALL - XR871 Arduino Core
+====================================
+
+Quick Start Guide
+-----------------
+
+1. Choose your platform below
+2. Run the installer or follow manual steps
+3. Open Arduino IDE and select "XR871GT Development Board"
+4. Upload your first sketch!
+
+
+Linux Installation
+------------------
+
+Option A: Automatic Installer
+  $ chmod +x install/install_linux.sh
+  $ ./install/install_linux.sh
+
+Option B: Arduino IDE Board Manager
+  1. Open Arduino IDE
+  2. File > Preferences
+  3. Add to "Additional Boards Manager URLs":
+     https://raw.githubusercontent.com/xradio-tech/xr871-arduino/main/package_xr871_index.json
+  4. Tools > Board > Boards Manager
+  5. Search "XR871" and click Install
+
+Option C: Arduino CLI
+  $ arduino-cli config set board_manager.additional_urls "https://raw.githubusercontent.com/xradio-tech/xr871-arduino/main/package_xr871_index.json"
+  $ arduino-cli update
+  $ arduino-cli core install xr871:xr871
+
+Option D: Manual Install
+  $ sudo apt install gcc-arm-none-eabi
+  $ cp -r hardware/xr871/1.0.0 ~/.arduino15/packages/hardware/xr871/
+  $ cp -r tools/* ~/.arduino15/packages/xr871/tools/
+
+
+macOS Installation
+------------------
+
+Option A: Automatic Installer
+  $ chmod +x install/install_macos.sh
+  $ ./install/install_macos.sh
+
+Option B: Arduino IDE Board Manager
+  1. Open Arduino IDE
+  2. Arduino > Preferences
+  3. Add to "Additional Boards Manager URLs":
+     https://raw.githubusercontent.com/xradio-tech/xr871-arduino/main/package_xr871_index.json
+  4. Tools > Board > Boards Manager
+  5. Search "XR871" and click Install
+
+Option C: Arduino CLI (requires Homebrew)
+  $ brew install arduino-cli
+  $ arduino-cli config set board_manager.additional_urls "https://raw.githubusercontent.com/xradio-tech/xr871-arduino/main/package_xr871_index.json"
+  $ arduino-cli update
+  $ arduino-cli core install xr871:xr871
+
+Option D: Manual Install
+  $ brew install arm-none-eabi-gcc
+  $ cp -r hardware/xr871/1.0.0 ~/.arduino15/packages/hardware/xr871/
+  $ cp -r tools/* ~/.arduino15/packages/xr871/tools/
+
+
+Windows Installation
+--------------------
+
+Option A: Automatic Installer
+  Double-click: install\install_windows.bat
+  (Run as Administrator)
+
+Option B: Arduino IDE Board Manager
+  1. Open Arduino IDE
+  2. File > Preferences
+  3. Add to "Additional Boards Manager URLs":
+     https://raw.githubusercontent.com/xradio-tech/xr871-arduino/main/package_xr871_index.json
+  4. Tools > Board > Boards Manager
+  5. Search "XR871" and click Install
+
+Option C: Arduino CLI
+  arduino-cli config set board_manager.additional_urls "https://raw.githubusercontent.com/xradio-tech/xr871-arduino/main/package_xr871_index.json"
+  arduino-cli update
+  arduino-cli core install xr871:xr871
+
+Option D: Manual Install
+  1. Install ARM GCC from https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm
+  2. Copy hardware\xr871\1.0.0 to %USERPROFILE%\.arduino15\packages\hardware\xr871\
+  3. Copy tools\* to %USERPROFILE%\.arduino15\packages\xr871\tools\
+
+
+Board Selection
+---------------
+
+After installation:
+
+1. Open Arduino IDE
+2. Go to Tools > Board
+3. Select "XR871 Arduino" > "XR871GT Development Board"
+4. Select the correct Port (usually /dev/ttyUSB0 on Linux, COMx on Windows, /dev/cu.usbserial on macOS)
+5. Click Upload
+
+
+First Sketch
+------------
+
+void setup() {
+    Serial.begin(115200);
+    delay(1000);
+    Serial.println("Hello XR871!");
+}
+
+void loop() {
+    Serial.println(".");
+    delay(500);
+}
+
+
+Troubleshooting
+---------------
+
+Q: "arm-none-eabi-gcc not found"
+A: Install ARM GCC toolchain for your platform (see above)
+
+Q: "Board not found in Arduino IDE"
+A: Restart Arduino IDE after installation. Check Tools > Board > XR871 Arduino
+
+Q: Upload fails
+A: Check USB connection. Install USB drivers (CP2102/CH340). Try pressing BOOT button.
+
+Q: "Linker script not found"
+A: Make sure the package is installed in ~/.arduino15/packages/hardware/xr871/1.0.0/
+
+
+Support
+-------
+
+GitHub: https://github.com/xradio-tech/xr871-arduino
+Issues: https://github.com/xradio-tech/xr871-arduino/issues
+Docs:   https://github.com/xradio-tech/xr871-arduino/wiki

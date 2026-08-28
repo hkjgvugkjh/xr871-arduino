@@ -1,0 +1,19 @@
+#!/bin/bash
+# XR871 Arduino Compiler Wrapper
+# Dispatch to the correct system tool based on the basename
+
+# Get the basename of this script (e.g., arm-none-eabi-gcc)
+BASENAME=$(basename "$0")
+
+# Check for system tool
+if command -v "$BASENAME" &> /dev/null; then
+    exec "$BASENAME" "$@"
+elif command -v "/usr/bin/$BASENAME" &> /dev/null; then
+    exec "/usr/bin/$BASENAME" "$@"
+else
+    echo "ERROR: $BASENAME not found!"
+    echo "Please install the ARM GCC toolchain:"
+    echo "  sudo apt install gcc-arm-none-eabi"
+    echo "Or download from: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm"
+    exit 1
+fi

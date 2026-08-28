@@ -1,0 +1,26 @@
+{
+  "name": "xr871",
+  "maintainer": "XRADIO Technology",
+  "websiteURL": "https://github.com/XradioTech/XR871-OLD",
+  "email": "support@xradiotech.com",
+  "help": {
+    "online": "https://github.com/XradioTech/XR871-OLD"
+  },
+  "platforms": [
+    {
+      "name": "XR871 Arduino",
+      "architecture": "xr871",
+      "version": "1.0.0",
+      "category": "Contributed",
+      "url": "https://github.com/XradioTech/XR871-ARDUINO/releases/download/1.0.0/xr871-arduino-1.0.0.zip",
+      "archiveFileName": "xr871-arduino-1.0.0.zip",
+      "checksum": "SHA-256:PLACEHOLDER",
+      "size": "0",
+      "boards": [
+        { "name": "XR871GT Development Board" }
+      ],
+      "toolsDependencies": []
+    }
+  ],
+  "tools": []
+}

@@ -1,0 +1,61 @@
+name=XR871 Arduino
+version=1.0.0
+
+# ============================================================
+# Compiler configuration
+# ============================================================
+compiler.path={runtime.tools.gcc-arm-none-eabi.path}/bin/
+compiler.c.cmd=arm-none-eabi-gcc
+compiler.c.flags=-c -Os -gdwarf-2 -ffunction-sections -fdata-sections -MMD
+compiler.c.elf.cmd=arm-none-eabi-g++
+compiler.c.elf.flags=-Os -Wl,--gc-sections
+compiler.cpp.cmd=arm-none-eabi-g++
+compiler.cpp.flags=-c -Os -gdwarf-2 -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions -MMD
+compiler.S.cmd=arm-none-eabi-gcc
+compiler.S.flags=-c -g -x assembler-with-cpp
+compiler.ar.cmd=arm-none-eabi-ar
+compiler.ar.flags=rcs
+compiler.objcopy.cmd=arm-none-eabi-objcopy
+compiler.objcopy.eep.flags=-O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0
+compiler.elf2hex.bin.flags=-O binary
+compiler.elf2hex.cmd=arm-none-eabi-objcopy
+compiler.size.cmd=arm-none-eabi-size
+
+# ============================================================
+# CPU flags
+# ============================================================
+build.extra_flags=-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+
+# ============================================================
+# Build recipes
+# ============================================================
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} {build.extra_flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_XR871 -DARDUINO_XR871 -DARDUINO_ARCH_{build.arch} -I{runtime.platform.path}/system {includes} "{source_file}" -o "{object_file}"
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} {build.extra_flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_XR871 -DARDUINO_XR871 -DARDUINO_ARCH_{build.arch} -I{runtime.platform.path}/system {includes} "{source_file}" -o "{object_file}"
+recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} {build.extra_flags} -DF_CPU={build.f_cpu} -DARDUINO={runtime.ide.version} -DARDUINO_{build.board} -DARDUINO_ARCH_XR871 -DARDUINO_XR871 -DARDUINO_ARCH_{build.arch} -I{runtime.platform.path}/system {includes} "{source_file}" -o "{object_file}"
+recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{archive_file_path}" "{object_file}"
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {build.extra_flags} {compiler.c.elf.flags} "-T{runtime.platform.path}/variants/{build.variant}/{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" -o "{build.path}/{build.project_name}.elf" {object_files} "{archive_file_path}" "-L{build.path}" -lm
+recipe.objcopy.bin.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.bin.flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
+recipe.output.tmp_file={build.project_name}.bin
+recipe.output.save_file={build.project_name}.{build.variant}.bin
+
+# ============================================================
+# Size pattern
+# ============================================================
+recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.elf"
+recipe.size.regex=^(?:\.text|\.data|\.rodata)\s+([0-9]+).*
+recipe.data.regex=^(?:\.data|\.bss)\s+([0-9]+).*
+
+# ============================================================
+# Upload tools
+# ============================================================
+tools.phoenixMC.path={runtime.tools.phoenixMC.path}
+tools.phoenixMC.cmd=phoenixMC
+tools.phoenixMC.upload.params.verbose=
+tools.phoenixMC.upload.params.quiet=
+tools.phoenixMC.upload.pattern="{path}/{cmd}" --port {serial.port} --baud {upload.speed} --bin "{build.path}/{build.project_name}.bin" --target xr871
+
+# ============================================================
+# Build properties
+# ============================================================
+build.ldscript=linker.ld
+build.arch=XR871

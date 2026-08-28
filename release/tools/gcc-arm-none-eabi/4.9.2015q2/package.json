@@ -1,0 +1,5 @@
+{
+  "name": "gcc-arm-none-eabi",
+  "version": "4.9.2015q2",
+  "description": "ARM GCC Embedded Toolchain for XR871"
+}

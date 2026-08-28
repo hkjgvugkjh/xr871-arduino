@@ -1,0 +1,22 @@
+# XR871 Arduino Boards Configuration
+
+menu.cpu=Processor
+
+##############################################################
+xr871gt.name=XR871GT Development Board
+
+xr871gt.upload.tool=phoenixMC
+xr871gt.upload.protocol=serial
+xr871gt.upload.maximum_size=1048576
+xr871gt.upload.maximum_data_size=458752
+xr871gt.upload.speed=115200
+xr871gt.upload.wait_for_upload_port=false
+xr871gt.upload.native_usb=false
+
+xr871gt.build.f_cpu=192000000L
+xr871gt.build.board=XR871GT
+xr871gt.build.core=xr871
+xr871gt.build.variant=xr871gt
+xr871gt.build.extra_flags=-D__CONFIG_CHIP_XR871 -D__CONFIG_CPU_CM4F -D__CONFIG_OS_FREERTOS -DARDUINO_XR871 -DARDUINO_ARCH_XR871
+xr871gt.build.mcu=cortex-m4f
+xr871gt.build.product_line=XR871

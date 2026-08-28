@@ -1,0 +1,28 @@
+{
+  "name": "xr871",
+  "maintainer": "hkjgvugkjh",
+  "websiteURL": "https://github.com/hkjgvugkjh/xr871-arduino",
+  "email": "",
+  "help": {
+    "online": "https://github.com/hkjgvugkjh/xr871-arduino/wiki"
+  },
+  "platforms": [
+    {
+      "name": "XR871 Arduino",
+      "architecture": "xr871",
+      "version": "1.0.0",
+      "category": "Contributed",
+      "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/xr871-arduino-1.0.0.zip",
+      "archiveFileName": "xr871-arduino-1.0.0.zip",
+      "checksum": "SHA-256:PLACEHOLDER",
+      "size": "0",
+      "boards": [
+        {
+          "name": "XR871GT Development Board"
+        }
+      ],
+      "toolsDependencies": []
+    }
+  ],
+  "tools": []
+}

@@ -1,0 +1,25 @@
+#!/bin/bash
+# XR871 Arduino Compiler Wrapper - Linux/macOS
+# This script wraps the ARM GCC compiler for XR871
+
+# Get the basename of this script (e.g., arm-none-eabi-gcc)
+BASENAME=$(basename "$0")
+
+# Remove .exe extension if present (Windows)
+BASENAME=${BASENAME%.exe}
+
+# Check for system tool
+if command -v "$BASENAME" &> /dev/null; then
+    exec "$BASENAME" "$@"
+elif command -v "/usr/bin/$BASENAME" &> /dev/null; then
+    exec "/usr/bin/$BASENAME" "$@"
+elif command -v "/usr/local/bin/$BASENAME" &> /dev/null; then
+    exec "/usr/local/bin/$BASENAME" "$@"
+else
+    echo "ERROR: $BASENAME not found!"
+    echo "Please install the ARM GCC toolchain:"
+    echo "  Linux: sudo apt install gcc-arm-none-eabi"
+    echo "  macOS: brew install arm-none-eabi-gcc"
+    echo "  Or download from: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm"
+    exit 1
+fi
