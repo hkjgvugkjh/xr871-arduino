@@ -1,0 +1,126 @@
+{
+  "packages": [
+    {
+      "name": "xr871",
+      "maintainer": "XR871 Arduino Community",
+      "websiteURL": "https://github.com/hkjgvugkjh/xr871-arduino",
+      "email": "support@xradio-tech.com",
+      "help": {
+        "online": "https://github.com/hkjgvugkjh/xr871-arduino/wiki"
+      },
+      "platforms": [
+        {
+          "name": "XR871 Arduino",
+          "architecture": "xr871",
+          "version": "1.0.0",
+          "category": "Contributed",
+          "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/xr871-arduino-1.0.0.zip",
+          "archiveFileName": "xr871-arduino-1.0.0.zip",
+          "checksum": "SHA-256:df726d079bf12e7d39dda626b8f8674806d029c7ce1315239c4b012d469e2359",
+          "size": "54375",
+          "boards": [
+            {
+              "name": "XR871GT Development Board"
+            }
+          ],
+          "toolsDependencies": [
+            {
+              "packager": "xr871",
+              "name": "arm-none-eabi-gcc",
+              "version": "13.2.1"
+            },
+            {
+              "packager": "xr871",
+              "name": "phoenixMC",
+              "version": "1.0.0"
+            }
+          ]
+        }
+      ],
+      "tools": [
+        {
+          "name": "arm-none-eabi-gcc",
+          "version": "13.2.1",
+          "systems": [
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/arm-none-eabi-gcc-13.2.1-x86_64-pc-linux-gnu.tar.gz",
+              "archiveFileName": "arm-none-eabi-gcc-13.2.1-x86_64-pc-linux-gnu.tar.gz",
+              "checksum": "SHA-256:0aafe0982caf8ebca41f2d933dd0acfed964bdf8ea370992ef0e65727bfb9689",
+              "size": "932"
+            },
+            {
+              "host": "aarch64-linux-gnu",
+              "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/arm-none-eabi-gcc-13.2.1-aarch64-linux-gnu.tar.gz",
+              "archiveFileName": "arm-none-eabi-gcc-13.2.1-aarch64-linux-gnu.tar.gz",
+              "checksum": "SHA-256:ff08d2b1bd18899fe3e1f149b3038ca418581c50cb6a84741bf74a16837357c6",
+              "size": "926"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/arm-none-eabi-gcc-13.2.1-x86_64-apple-darwin.tar.gz",
+              "archiveFileName": "arm-none-eabi-gcc-13.2.1-x86_64-apple-darwin.tar.gz",
+              "checksum": "SHA-256:c6e56447ea2e8ffa3f36ebc2841edec85e6761c611d4f6505a62bc9474aa058d",
+              "size": "931"
+            },
+            {
+              "host": "arm64-apple-darwin",
+              "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/arm-none-eabi-gcc-13.2.1-arm64-apple-darwin.tar.gz",
+              "archiveFileName": "arm-none-eabi-gcc-13.2.1-arm64-apple-darwin.tar.gz",
+              "checksum": "SHA-256:044b62764e495987e4db45b10ee95cac64e2a8146d71cf3fc5804204db2c0797",
+              "size": "926"
+            },
+            {
+              "host": "i686-mingw32",
+              "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/arm-none-eabi-gcc-13.2.1-i686-mingw32.zip",
+              "archiveFileName": "arm-none-eabi-gcc-13.2.1-i686-mingw32.zip",
+              "checksum": "SHA-256:5f4529c7d80d880098407ba3cb5e91cbcbd9ada0e96e69fcde3fd27ff2491c4f",
+              "size": "5107"
+            },
+            {
+              "host": "x86_64-mingw32",
+              "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/arm-none-eabi-gcc-13.2.1-x86_64-mingw32.zip",
+              "archiveFileName": "arm-none-eabi-gcc-13.2.1-x86_64-mingw32.zip",
+              "checksum": "SHA-256:5f4529c7d80d880098407ba3cb5e91cbcbd9ada0e96e69fcde3fd27ff2491c4f",
+              "size": "5107"
+            }
+          ]
+        },
+        {
+          "name": "phoenixMC",
+          "version": "1.0.0",
+          "systems": [
+            {
+              "host": "x86_64-pc-linux-gnu",
+              "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/phoenixMC-1.0.0-x86_64-pc-linux-gnu.tar.gz",
+              "archiveFileName": "phoenixMC-1.0.0-x86_64-pc-linux-gnu.tar.gz",
+              "checksum": "SHA-256:498334a3be8ec21df0961eb966549ce881d265eb197ab6380ef60445d67c8816",
+              "size": "466"
+            },
+            {
+              "host": "aarch64-linux-gnu",
+              "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/phoenixMC-1.0.0-aarch64-linux-gnu.tar.gz",
+              "archiveFileName": "phoenixMC-1.0.0-aarch64-linux-gnu.tar.gz",
+              "checksum": "SHA-256:2b032d1811441addb8091c5a1b2f354cc42ccba68e92d0bf6ad772b01d9919cb",
+              "size": "469"
+            },
+            {
+              "host": "x86_64-apple-darwin",
+              "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/phoenixMC-1.0.0-x86_64-apple-darwin.tar.gz",
+              "archiveFileName": "phoenixMC-1.0.0-x86_64-apple-darwin.tar.gz",
+              "checksum": "SHA-256:83e11972b2f801686f561625173ecb477fa61c48f33833f11863a7755c3fccad",
+              "size": "472"
+            },
+            {
+              "host": "arm64-apple-darwin",
+              "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.0.0/phoenixMC-1.0.0-arm64-apple-darwin.tar.gz",
+              "archiveFileName": "phoenixMC-1.0.0-arm64-apple-darwin.tar.gz",
+              "checksum": "SHA-256:73a48484b165390c25b43e401e45494becc19d98af3999d07cec57e3a586036d",
+              "size": "469"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

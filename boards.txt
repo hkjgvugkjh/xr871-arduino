@@ -1,0 +1,79 @@
+# XR871 Arduino Boards Configuration
+
+menu.FlashSize=Flash Size
+menu.UploadSpeed=Upload Speed
+
+##############################################################
+# XR871 EVB Board
+##############################################################
+
+xr871_evb.name=XR871 EVB
+xr871_evb.upload.tool=xr871_tool
+xr871_evb.upload.maximum_size=102400
+xr871_evb.upload.maximum_data_size=458752
+xr871_evb.upload.protocol=serial
+xr871_evb.upload_port.0.vid=0x0403
+xr871_evb.upload_port.0.pid=0x6001
+
+# CPU: Cortex-M4F @ 192MHz
+xr871_evb.build.mcu=cortex-m4
+xr871_evb.build.f_cpu=192000000L
+xr871_evb.build.board=XR871_EVB
+xr871_evb.build.core=xr871
+xr871_evb.build.variant=xr871_evb
+xr871_evb.build.extra_flags=-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+
+# Flash: 1MB SPI NOR
+xr871_evb.build.flash_size=1M
+xr871_evb.build.flash_mode=qio
+xr871_evb.build.flash_freq=80M
+
+# Linker script (non-XIP for Arduino sketches)
+xr871_evb.build.ldscript={runtime.platform.path}/SDK/project/linker_script/gcc/xr871/appos.ld
+
+# Bootloader address
+xr871_evb.build.bootloader_addr=0x0
+
+# Partition table (image_xip.cfg based)
+xr871_evb.build.partitions=image_xip
+
+# Upload Speed Options
+xr871_evb.menu.UploadSpeed.115200.upload.speed=115200
+xr871_evb.menu.UploadSpeed.230400.upload.speed=230400
+xr871_evb.menu.UploadSpeed.460800.upload.speed=460800
+xr871_evb.menu.UploadSpeed.921600.upload.speed=921600
+
+# Flash Size Options
+xr871_evb.menu.FlashSize.1M.build.flash_size=1M
+
+# XIP Support
+xr871_evb.build.xip=true
+xr871_evb.build.xip_addr=0x10000000
+xr871_evb.build.xip_size=525376
+
+# WiFi firmware included
+xr871_evb.build.wifi_fw=true
+xr871_evb.build.net_fw=true
+
+##############################################################
+# XR871 Generic Board
+##############################################################
+
+xr871_generic.name=XR871 Generic
+xr871_generic.upload.tool=xr871_tool
+xr871_generic.upload.maximum_size=102400
+xr871_generic.upload.maximum_data_size=458752
+xr871_generic.upload.protocol=serial
+
+xr871_generic.build.mcu=cortex-m4
+xr871_generic.build.f_cpu=192000000L
+xr871_generic.build.board=XR871_GENERIC
+xr871_generic.build.core=xr871
+xr871_generic.build.variant=xr871_generic
+xr871_generic.build.extra_flags=-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
+
+xr871_generic.build.flash_size=1M
+xr871_generic.build.ldscript={runtime.platform.path}/SDK/project/linker_script/gcc/xr871/appos.ld
+
+xr871_generic.menu.UploadSpeed.115200.upload.speed=115200
+xr871_generic.menu.UploadSpeed.921600.upload.speed=921600

@@ -1,0 +1,65 @@
+# XR871 Arduino Platform Configuration
+# 编译器和工具链配置
+
+# 编译器路径 (指向Board Manager内置的ARM GCC)
+compiler.path={runtime.tools.arm-none-eabi-gcc.path}/bin/
+
+# 编译工具命令名
+compiler.cmd.gcc=arm-none-eabi-gcc
+compiler.cmd.g++=arm-none-eabi-g++
+compiler.cmd.as=arm-none-eabi-as
+compiler.cmd.ld=arm-none-eabi-ld
+compiler.cmd.ar=arm-none-eabi-ar
+compiler.cmd.objcopy=arm-none-eabi-objcopy
+compiler.cmd.objdump=arm-none-eabi-objdump
+compiler.cmd.size=arm-none-eabi-size
+
+# Cortex-M4F with softfp 编译标志
+build.extra_flags=-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp -fno-exceptions
+
+# 链接标志 (使用XIP链接脚本)
+build.link_flags=-T{runtime.platform.path}/SDK/project/linker_script/gcc/xr871/appos.ld
+
+# SDK路径
+compiler.sdk.path={runtime.platform.path}/SDK/
+
+# ============================================================
+# 烧录工具配置 (xr871_tool)
+# ============================================================
+tools.xr871_tool.path={runtime.tools.xr871_tool.path}
+tools.xr871_tool.cmd=xr871_tool
+tools.xr871_tool.cmd.windows=xr871_tool.exe
+
+# 上传协议
+tools.xr871_tool.upload.protocol=serial
+tools.xr871_tool.upload.params.verbose=-v
+tools.xr871_tool.upload.params.quiet=-q
+
+# 烧录命令
+tools.xr871_tool.upload.pattern="{path}/{cmd}" flash -p "{serial.port}" --baud {upload.speed} -i "{build.path}/{build.project_name}.bin"
+
+# 擦除命令
+tools.xr871_tool.erase.pattern="{path}/{cmd}" erase -p "{serial.port}" --baud {upload.speed}
+
+# ============================================================
+# 网络烧录 (OTA)
+# ============================================================
+tools.xr871_tool.network_cmd=xr871_ota
+tools.xr871_tool.upload.network_pattern="{network_cmd}" -i "{serial.port}" -p 8266 -f "{build.path}/{build.project_name}.bin"
+
+# ============================================================
+# 镜像打包Hook (编译后自动调用mkimage)
+# ============================================================
+recipe.hooks.objcopy.postobjcopy.1.pattern="{runtime.platform.path}/tools/xr871_mkimage/mkimage" -c "{runtime.platform.path}/SDK/project/image_cfg/xr871/image_xip.cfg" -o "{build.path}/{build.project_name}_full.bin" -d "{build.path}"
+
+# ============================================================
+# 内存布局定义 (用于Arduino IDE显示)
+# ============================================================
+menu.FlashSize=Flash Size
+menu.FlashSize.1M.build.flash_size=1M
+
+menu.UploadSpeed=Upload Speed
+menu.UploadSpeed.115200.upload.speed=115200
+menu.UploadSpeed.230400.upload.speed=230400
+menu.UploadSpeed.460800.upload.speed=460800
+menu.UploadSpeed.921600.upload.speed=921600
