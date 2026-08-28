@@ -1,0 +1,11 @@
+{
+  "name": "ArduinoJson",
+  "version": "6.19.4",
+  "description": "ArduinoJson library for XR871",
+  "keywords": "json, rest, http",
+  "frameworks": "arduino",
+  "platforms": "xr871",
+  "build": {
+    "libLibrary": "Arduino"
+  }
+}

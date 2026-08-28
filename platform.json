@@ -1,0 +1,38 @@
+{
+  "name": "xr871",
+  "title": "XR871 Arduino Platform",
+  "description": "XR871 ARM Cortex-M4F WiFi SoC Arduino Platform for PlatformIO",
+  "url": "https://github.com/XradioTech/XR871-OLD",
+  "homepage": "https://github.com/XradioTech/XR871-OLD",
+  "license": "Apache-2.0",
+  "keywords": [
+    "arduino",
+    "xr871",
+    "wifi",
+    "cortex-m4f",
+    "xradiotech"
+  ],
+  "frameworks": {
+    "arduino": {
+      "package": "framework-arduino-xr871",
+      "script": "builder/main.py"
+    }
+  },
+  "packages": {
+    "framework-arduino-xr871": {
+      "type": "framework",
+      "version": "~1.0.0",
+      "optional": false
+    },
+    "toolchain-gccarmeabi": {
+      "type": "toolchain",
+      "version": "~4.9.2015q2",
+      "optional": false
+    },
+    "tool-bossac": {
+      "type": "uploader",
+      "version": "~1.0.0",
+      "optional": true
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "xr871",
+  "title": "XR871 WiFi SoC",
+  "description": "XR871 ARM Cortex-M4F WiFi SoC Arduino Core",
+  "homepage": "https://github.com/XradioTech/XR871-OLD",
+  "license": "Apache-2.0",
+  "keywords": [
+    "arduino",
+    "xr871",
+    "wifi",
+    "cortex-m4f",
+    "xradiotech"
+  ],
+  "homepage": "",
+  "platforms": [
+    "xr871"
+  ],
+  "tools": {
+    "gccarmeabi": {
+      "version": "4.9.2015q2",
+      "upload": false
+    }
+  },
+  "build": {
+    "core": "xr871",
+    "cpu": "cortex-m4f",
+    "mcu": "xr871",
+    "product_line": "XR871",
+    "variant": "xr871gt"
+  }
+}
