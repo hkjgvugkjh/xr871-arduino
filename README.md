@@ -1,6 +1,7 @@
 # XR871 Arduino移植项目 (方案C)
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/hkjgvugkjh/xr871-arduino/releases)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/hkjgvugkjh/xr871-arduino/releases)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## 项目概述
 
@@ -10,6 +11,10 @@
 - **Wire.h/Wire.cpp** - I2C驱动库（TwoWire类）
 - **SPI.h/SPI.cpp** - SPI驱动库（SPIClass类）
 - **PWM.h/PWM.cpp** - PWM驱动库（analogWrite支持）
+- **ADC.h/ADC.cpp** - ADC驱动库（analogRead支持）
+- **WiFi.h/WiFi.cpp** - WiFi库（lwIP协议栈封装）
+- **OTA.h/OTA.cpp** - OTA升级库
+- **Audio.h/Audio.cpp** - I2S/DMIC音频库
 - **Blink.ino** - Blink示例程序
 - **Makefile** - 编译系统集成
 
@@ -25,12 +30,33 @@ xr871-arduino/
 ├── SPI.cpp                # SPI实现
 ├── PWM.h                  # PWM头文件
 ├── PWM.cpp                # PWM实现
+├── ADC.h                  # ADC头文件
+├── ADC.cpp                # ADC实现
+├── WiFi.h                 # WiFi头文件
+├── WiFi.cpp               # WiFi实现
+├── WiFiClient.h           # WiFi客户端
+├── WiFiClient.cpp         # WiFi客户端实现
+├── WiFiUDP.h              # WiFi UDP
+├── WiFiUDP.cpp            # WiFi UDP实现
+├── OTA.h                  # OTA头文件
+├── OTA.cpp                # OTA实现
+├── Audio.h                # 音频头文件
+├── Audio.cpp              # 音频实现
 ├── Blink.ino              # Blink示例
 ├── I2C_Scan.ino           # I2C扫描示例
 ├── SPI_Test.ino           # SPI测试示例
 ├── PWM_Test.ino           # PWM测试示例
+├── WiFi_Scan.ino          # WiFi扫描示例
+├── WiFi_Station.ino       # WiFi STA示例
+├── WiFi_AP.ino            # WiFi AP示例
+├── HTTP_Client.ino        # HTTP客户端示例
+├── Web_Server.ino         # Web服务器示例
 ├── Makefile               # 编译配置
 ├── README.md              # 本文件
+├── INSTALL_GUIDE.md       # 安装指南
+├── package_xr871_index.json  # Board Manager索引
+├── platform.txt           # 平台配置
+├── boards.txt             # 开发板配置
 └── SDK/                   # 参考SDK头文件
     └── include/
 ```
@@ -46,6 +72,11 @@ xr871-arduino/
 | **I2C (Wire)** | ✅ | TwoWire类，支持I2C0/I2C1，主模式 |
 | **SPI** | ✅ | SPIClass类，支持SPI0/SPI1，4种模式 |
 | **PWM** | ✅ | 8通道PWM，支持analogWrite |
+| **ADC** | ✅ | 9通道12位ADC，analogRead支持 |
+| **WiFi** | ✅ | WiFiClass，STA/AP模式，lwIP协议栈 |
+| **OTA** | ✅ | ArduinoOTAClass，HTTP OTA升级 |
+| **I2S** | ✅ | AudioOutput/AudioInput，I2S音频 |
+| **DMIC** | ✅ | 数字麦克风输入支持 |
 | **Time** | ✅ | delay/millis/micros 已实现 |
 | **Interrupt** | ✅ | attachInterrupt/detachInterrupt 已实现 |
 | **Math** | ✅ | min/max/constrain 等宏定义完成 |
@@ -55,11 +86,11 @@ xr871-arduino/
 
 | 模块 | 状态 | 说明 |
 |------|------|------|
-| **ADC** | ❌ | 需要封装 hal_adc.h |
-| **WiFi** | ❌ | 需要封装 lwIP 协议栈 |
-| **OTA** | ❌ | 需要封装 hal_ota.h |
-| **I2S** | ❌ | 需要封装 hal_i2s.h |
-| **DMIC** | ❌ | 需要封装 hal_dmic.h |
+| **Camera** | 🔶 | 需要封装hal_csi.h |
+| **IR** | 🔶 | 需要封装hal_irrx.h/hal_irtx.h |
+| **RTC** | 🔶 | 需要封装hal_rtc.h |
+| **Crypto** | 🔶 | 需要封装hal_crypto.h |
+| **SD/MMC** | 🔶 | 需要封装hal_sdmmc.h |
 
 ## 硬件引脚映射
 
@@ -70,6 +101,20 @@ xr871-arduino/
 | 0-22 | GPIOA0-A22 | GPIOA 端口 |
 | 23-38 | GPIOB0-B15 | GPIOB 端口 |
 | LED_BUILTIN | PA6 | 板载LED |
+
+### ADC引脚映射
+
+| Arduino Pin | GPIO | ADC通道 |
+|-------------|------|---------|
+| A0 | PA0 | ADC_CH0 |
+| A1 | PA1 | ADC_CH1 |
+| A2 | PA2 | ADC_CH2 |
+| A3 | PA3 | ADC_CH3 |
+| A4 | PA4 | ADC_CH4 |
+| A5 | PA5 | ADC_CH5 |
+| A6 | PA6 | ADC_CH6 |
+| A7 | PA7 | ADC_CH7 |
+| VBAT | PA8 | ADC_CH8 (电池电压) |
 
 ### I2C引脚映射
 
@@ -97,6 +142,22 @@ xr871-arduino/
 | 13 | PA13 | CH5 | GROUP2 |
 | 14 | PA14 | CH6 | GROUP3 |
 | 15 | PA15 | CH7 | GROUP3 |
+
+### I2S引脚映射
+
+| 信号 | GPIO | 说明 |
+|------|------|------|
+| BCLK | PA10 | 位时钟 |
+| LRCK | PA11 | 左右声道选择 |
+| DATA_OUT | PA12 | I2S输出 |
+| DATA_IN | PA13 | I2S输入 |
+
+### DMIC引脚映射
+
+| 信号 | GPIO | 说明 |
+|------|------|------|
+| CLK | PA14 | DMIC时钟 |
+| DATA | PA15 | DMIC数据 |
 
 ## 编译步骤
 
@@ -142,8 +203,8 @@ digitalWrite(pin, value);
 int value = digitalRead(pin);
 
 // 模拟I/O
-analogRead(pin);          // TODO
-analogWrite(pin, value);  // 已实现 (PWM)
+int adcValue = analogRead(pin);     // 已实现 (12位ADC)
+analogWrite(pin, value);            // 已实现 (PWM)
 
 // 时间
 delay(ms);
@@ -171,6 +232,22 @@ SPI.setDataMode(SPI_MODE0);
 SPI.setBitOrder(MSBFIRST);
 SPI.transfer(data);
 
+// WiFi
+WiFi.begin("SSID", "password");
+WiFi.softAP("AP_SSID");
+WiFi.localIP();
+WiFi.scanNetworks();
+
+// OTA
+ArduinoOTA.begin();
+ArduinoOTA.handle();
+
+// Audio (I2S/DMIC)
+audioOut.begin(AUDIO_SAMPLE_RATE_16K, AUDIO_BITS_PER_SAMPLE_16, AUDIO_CHANNELS_MONO);
+audioOut.write(data, len);
+audioIn.begin(AUDIO_SAMPLE_RATE_16K, AUDIO_BITS_PER_SAMPLE_16, AUDIO_CHANNELS_MONO);
+audioIn.read(data, len);
+
 // 数学
 min(a, b); max(a, b); constrain(val, lo, hi);
 ```
@@ -187,6 +264,132 @@ void loop() {
     delay(500);
     digitalWrite(LED_BUILTIN, LOW);
     delay(500);
+}
+```
+
+### ADC示例
+
+```cpp
+void setup() {
+    serialBegin(115200);
+}
+
+void loop() {
+    int value = analogRead(A0);  // 读取ADC通道0
+    serialPrint("ADC: ");
+    serialPrintInt(value);
+    serialPrint("\n");
+    delay(100);
+}
+```
+
+### WiFi STA示例
+
+```cpp
+void setup() {
+    serialBegin(115200);
+    WiFi.begin("SSID", "password");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+    }
+    serialPrint("IP: ");
+    serialPrintln(WiFi.localIP().toString().c_str());
+}
+
+void loop() {
+    // Your code here
+}
+```
+
+### WiFi AP示例
+
+```cpp
+void setup() {
+    serialBegin(115200);
+    WiFi.softAP("XR871_AP", "12345678");
+    serialPrint("AP IP: ");
+    serialPrintln(WiFi.softAPIP().toString().c_str());
+}
+
+void loop() {
+    // Your code here
+}
+```
+
+### WiFi扫描示例
+
+```cpp
+void setup() {
+    serialBegin(115200);
+    int n = WiFi.scanNetworks();
+    for (int i = 0; i < n; i++) {
+        serialPrint(WiFi.SSID(i).c_str());
+        serialPrint(" RSSI: ");
+        serialPrintInt(WiFi.RSSI(i));
+        serialPrint("\n");
+    }
+}
+
+void loop() {
+    delay(5000);
+}
+```
+
+### OTA升级示例
+
+```cpp
+void setup() {
+    WiFi.begin("SSID", "password");
+    ArduinoOTA.begin();
+    ArduinoOTA.onStart([]() {
+        serialPrintln("OTA Start");
+    });
+    ArduinoOTA.onEnd([]() {
+        serialPrintln("OTA End");
+    });
+    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+        serialPrint("Progress: ");
+        serialPrintInt(progress * 100 / total);
+        serialPrintln("%");
+    });
+}
+
+void loop() {
+    ArduinoOTA.handle();
+}
+```
+
+### I2S音频输出示例
+
+```cpp
+void setup() {
+    audioOut.begin(AUDIO_SAMPLE_RATE_44K, AUDIO_BITS_PER_SAMPLE_16, AUDIO_CHANNELS_STEREO);
+}
+
+void loop() {
+    // 生成正弦波
+    static int16_t sample = 0;
+    static float phase = 0;
+    phase += 0.05;
+    if (phase > 6.28) phase = 0;
+    sample = (int16_t)(sin(phase) * 32767);
+    audioOut.writeSamples(&sample, 1);
+}
+```
+
+### DMIC音频输入示例
+
+```cpp
+void setup() {
+    audioIn.setInputMode(INPUT_MODE_DMIC);
+    audioIn.begin(AUDIO_SAMPLE_RATE_16K, AUDIO_BITS_PER_SAMPLE_16, AUDIO_CHANNELS_MONO);
+}
+
+void loop() {
+    int16_t sample;
+    if (audioIn.readSamples(&sample, 1) > 0) {
+        // 处理音频样本
+    }
 }
 ```
 
@@ -239,23 +442,22 @@ void loop() {
 
 ## 后续计划
 
-1. **ADC驱动移植**
-   - 封装hal_adc.h -> analogRead
-   - 支持12位分辨率
+1. **Camera驱动移植**
+   - 封装hal_csi.h -> Camera类
+   - 支持OV2640/OV5640等摄像头
 
-2. **WiFi库移植**
-   - 封装lwIP协议栈 -> WiFiClass
-   - 实现WiFi.begin/available/send等标准接口
-   - 支持STA/AP模式
-
-3. **PlatformIO集成**
+2. **PlatformIO集成**
    - 创建boards/xr871.json开发板定义
    - 创建platform描述文件
    - 支持Arduino IDE直接开发
 
-4. **OTA升级**
-   - 实现固件空中升级功能
-   - 利用XR871 Flash分区机制
+3. **IR红外遥控**
+   - 封装hal_irrx.h/hal_irtx.h
+   - 支持NEC/RC5协议
+
+4. **RTC实时时钟**
+   - 封装hal_rtc.h
+   - 支持定时唤醒
 
 ## 已知问题
 

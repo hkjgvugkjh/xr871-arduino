@@ -2,7 +2,7 @@
  * @file WiFi.h
  * @brief ESP32 Compatible WiFi Library for XR871
  * @author Hermes Agent
- * @date 2026-08-27
+ * @date 2026-08-28
  *
  * Provides ESP32 Arduino WiFi API wrapper on top of XR871 wlan driver.
  * Supports STA, AP, and STA+AP modes with TCP/UDP networking.
@@ -20,6 +20,11 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+// Include XR871 wlan driver
+#include "net/wlan/wlan.h"
+#include "net/wlan/wlan_defs.h"
+#include "net/wlan/ethernetif.h"
 
 // ============================================================
 // WiFi Mode Definitions
@@ -48,10 +53,6 @@ typedef enum {
     WIFI_AUTH_WPA2_WPA3_PSK,
     WIFI_AUTH_MAX
 } wifi_auth_mode_t;
-
-typedef enum {
-    WIFI_SCAN_FAILED = -1,
-} wifi_scan_status_t;
 
 // ============================================================
 // WiFi Event Definitions

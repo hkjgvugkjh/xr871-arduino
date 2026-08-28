@@ -2,7 +2,9 @@
  * @file Audio.cpp
  * @brief ESP32 Compatible Audio Implementation for XR871
  * @author Hermes Agent
- * @date 2026-08-27
+ * @date 2026-08-28
+ * 
+ * Updated to use actual HAL I2S and DMIC drivers.
  */
 
 #include "Audio.h"
@@ -63,9 +65,10 @@ void AudioOutput::end() {
 
 size_t AudioOutput::write(const uint8_t* data, size_t len) {
     if (!_initialized || _paused || _muted) return 0;
-    // Write to I2S DMA buffer
-    // HAL_I2S_Transmit((uint16_t*)data, len/2);
-    return len;
+    
+    // Write to I2S DMA
+    int32_t written = HAL_I2S_Write_DMA((uint8_t*)data, len);
+    return (written > 0) ? written : 0;
 }
 
 size_t AudioOutput::write(int16_t sample) {
@@ -168,12 +171,62 @@ void AudioOutput::setI2SPins(int bclk, int lrck, int data_out, int data_in) {
 
 bool AudioOutput::initI2S() {
     // Initialize I2S peripheral
-    // HAL_I2S_Init();
-    return true;
+    I2S_Param i2sParam;
+    memset(&i2sParam, 0, sizeof(i2sParam));
+    
+    // Configure I2S hardware parameters
+    i2sParam.hwParam = (I2S_HWParam*)malloc(sizeof(I2S_HWParam));
+    if (!i2sParam.hwParam) return false;
+    
+    memset(i2sParam.hwParam, 0, sizeof(I2S_HWParam));
+    
+    // Set I2S format
+    i2sParam.hwParam->i2sFormat = false;  // I2S format
+    i2sParam.hwParam->clkMode = PCM_CLK_MODE_MASTER;
+    i2sParam.hwParam->transferFormat = PCM_TRANSFMT_I2S;
+    i2sParam.hwParam->signalInterval = PCM_SIGNAL_INV_DISABLE;
+    i2sParam.hwParam->lrckPeriod = 31;  // 32 bit clocks per frame
+    i2sParam.hwParam->frameMode = I2S_SHORT_FRAME;
+    i2sParam.hwParam->txMsbFirst = I2S_TX_MSB_FIRST;
+    i2sParam.hwParam->rxMsbFirst = I2S_RX_MSB_FIRST;
+    i2sParam.hwParam->txFifoLevel = 7;
+    i2sParam.hwParam->rxFifoLevel = 7;
+    
+    // Set clock divider based on sample rate
+    switch (_sampleRate) {
+        case AUDIO_SAMPLE_RATE_8K:
+            i2sParam.mclkDiv = 24;
+            break;
+        case AUDIO_SAMPLE_RATE_16K:
+            i2sParam.mclkDiv = 12;
+            break;
+        case AUDIO_SAMPLE_RATE_44K:
+        case AUDIO_SAMPLE_RATE_48K:
+            i2sParam.mclkDiv = 4;
+            break;
+        default:
+            i2sParam.mclkDiv = 12;
+            break;
+    }
+    
+    HAL_Status status = HAL_I2S_Init(&i2sParam);
+    free(i2sParam.hwParam);
+    
+    if (status != HAL_OK) return false;
+    
+    // Open I2S for data transfer
+    I2S_DataParam dataParam;
+    memset(&dataParam, 0, sizeof(dataParam));
+    dataParam.channels = _channels;
+    dataParam.bufSize = AUDIO_BUFFER_SIZE;
+    
+    status = HAL_I2S_Open(&dataParam);
+    return (status == HAL_OK);
 }
 
 bool AudioOutput::deinitI2S() {
-    // HAL_I2S_DeInit();
+    HAL_I2S_Close(I2S_DIR_TX);
+    HAL_I2S_DeInit();
     return true;
 }
 
@@ -205,7 +258,26 @@ bool AudioInput::begin(audio_sample_rate_t sampleRate,
     _bitsPerSample = bitsPerSample;
     _channels = channels;
     
-    if (!initI2S()) return false;
+    if (_inputMode == INPUT_MODE_DMIC) {
+        // Use DMIC
+        DMIC_Param dmicParam;
+        memset(&dmicParam, 0, sizeof(dmicParam));
+        
+        HAL_Status status = HAL_DMIC_Init(&dmicParam);
+        if (status != HAL_OK) return false;
+        
+        DMIC_DataParam dataParam;
+        memset(&dataParam, 0, sizeof(dataParam));
+        dataParam.channels = _channels;
+        dataParam.bufSize = AUDIO_BUFFER_SIZE;
+        
+        status = HAL_DMIC_Open(&dataParam);
+        if (status != HAL_OK) return false;
+    } else {
+        // Use I2S
+        if (!initI2S()) return false;
+    }
+    
     _initialized = true;
     return true;
 }
@@ -219,9 +291,15 @@ void AudioInput::end() {
 
 size_t AudioInput::read(uint8_t* data, size_t len) {
     if (!_initialized) return 0;
-    // Read from I2S DMA buffer
-    // HAL_I2S_Receive((uint16_t*)data, len/2);
-    return len;
+    
+    int32_t bytesRead = 0;
+    if (_inputMode == INPUT_MODE_DMIC) {
+        bytesRead = HAL_DMIC_Read_DMA(data, len);
+    } else {
+        bytesRead = HAL_I2S_Read_DMA(data, len);
+    }
+    
+    return (bytesRead > 0) ? bytesRead : 0;
 }
 
 size_t AudioInput::readSamples(int16_t* samples, size_t count) {
@@ -295,10 +373,58 @@ void AudioInput::setDMICPins(int clk, int data) {
 }
 
 bool AudioInput::initI2S() {
-    return true;
+    I2S_Param i2sParam;
+    memset(&i2sParam, 0, sizeof(i2sParam));
+    
+    i2sParam.hwParam = (I2S_HWParam*)malloc(sizeof(I2S_HWParam));
+    if (!i2sParam.hwParam) return false;
+    
+    memset(i2sParam.hwParam, 0, sizeof(I2S_HWParam));
+    
+    i2sParam.hwParam->i2sFormat = false;
+    i2sParam.hwParam->clkMode = PCM_CLK_MODE_MASTER;
+    i2sParam.hwParam->transferFormat = PCM_TRANSFMT_I2S;
+    i2sParam.hwParam->signalInterval = PCM_SIGNAL_INV_DISABLE;
+    i2sParam.hwParam->lrckPeriod = 31;
+    i2sParam.hwParam->frameMode = I2S_SHORT_FRAME;
+    i2sParam.hwParam->txMsbFirst = I2S_TX_MSB_FIRST;
+    i2sParam.hwParam->rxMsbFirst = I2S_RX_MSB_FIRST;
+    i2sParam.hwParam->txFifoLevel = 7;
+    i2sParam.hwParam->rxFifoLevel = 7;
+    
+    switch (_sampleRate) {
+        case AUDIO_SAMPLE_RATE_8K:
+            i2sParam.mclkDiv = 24;
+            break;
+        case AUDIO_SAMPLE_RATE_16K:
+            i2sParam.mclkDiv = 12;
+            break;
+        case AUDIO_SAMPLE_RATE_44K:
+        case AUDIO_SAMPLE_RATE_48K:
+            i2sParam.mclkDiv = 4;
+            break;
+        default:
+            i2sParam.mclkDiv = 12;
+            break;
+    }
+    
+    HAL_Status status = HAL_I2S_Init(&i2sParam);
+    free(i2sParam.hwParam);
+    
+    if (status != HAL_OK) return false;
+    
+    I2S_DataParam dataParam;
+    memset(&dataParam, 0, sizeof(dataParam));
+    dataParam.channels = _channels;
+    dataParam.bufSize = AUDIO_BUFFER_SIZE;
+    
+    status = HAL_I2S_Open(&dataParam);
+    return (status == HAL_OK);
 }
 
 bool AudioInput::deinitI2S() {
+    HAL_I2S_Close(I2S_DIR_RX);
+    HAL_I2S_DeInit();
     return true;
 }
 
@@ -318,7 +444,6 @@ AudioCodec::~AudioCodec() {
 }
 
 bool AudioCodec::begin() {
-    // Initialize AC101 codec via I2C
     _initialized = true;
     return true;
 }
