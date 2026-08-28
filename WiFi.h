@@ -6,28 +6,20 @@
  *
  * Provides ESP32 Arduino WiFi API wrapper on top of XR871 wlan driver.
  * Supports STA, AP, and STA+AP modes with TCP/UDP networking.
- *
- * ESP32 API Compatibility:
- *   - WiFi.begin(), WiFi.disconnect(), WiFi.status()
- *   - WiFi.localIP(), WiFi.macAddress(), WiFi.scanNetworks()
- *   - WiFi.mode(WIFI_STA/WIFI_AP/WIFI_AP_STA)
- *   - WiFi.softAP(), WiFi.softAPIP(), WiFi.softAPmacAddress()
- *   - WiFiClient (TCP), WiFiServer (TCP), WiFiUDP (UDP)
- *   - HTTPClient, WebServer (optional)
  */
 
 #ifndef _WIFI_XR871_H_
 #define _WIFI_XR871_H_
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // ============================================================
 // WiFi Mode Definitions
@@ -132,130 +124,6 @@ typedef struct {
 typedef void (*system_event_cb_t)(system_event_t *event);
 
 // ============================================================
-// IP Address Type (ESP32 Compatible)
-// ============================================================
-class IPAddress {
-private:
-    union {
-        uint8_t bytes[4];
-        uint32_t dword;
-    } _address;
-
-public:
-    IPAddress();
-    IPAddress(uint8_t first_octet, uint8_t second_octet, uint8_t third_octet, uint8_t fourth_octet);
-    IPAddress(uint32_t address);
-    IPAddress(const uint8_t *address);
-
-    operator uint32_t() const;
-    bool operator==(const IPAddress& addr) const;
-    bool operator==(const uint8_t* addr) const;
-    uint8_t operator[](int index) const;
-    uint8_t& operator[](int index);
-
-    IPAddress& operator=(uint32_t address);
-    IPAddress& operator=(const uint8_t *address);
-    IPAddress& operator+=(uint32_t address);
-
-    uint8_t* raw_address();
-    String toString() const;
-
-    friend class WiFiClient;
-    friend class WiFiUDP;
-};
-
-// ============================================================
-// WiFi Class
-// ============================================================
-class WiFiClass {
-public:
-    // Mode control
-    bool mode(wifi_mode_t mode);
-    wifi_mode_t getMode();
-
-    // STA control
-    bool begin(const char* ssid, const char* passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL);
-    bool begin(char* ssid, char* passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL);
-    bool begin();
-    bool disconnect(bool wifioff = false, bool eraseap = false);
-    bool config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, 
-                IPAddress dns1 = (uint32_t)0x00000000, IPAddress dns2 = (uint32_t)0x00000000);
-
-    // STA status
-    wl_status_t status();
-    bool isConnected();
-    String macAddress();
-    IPAddress localIP();
-    IPAddress subnetMask();
-    IPAddress gatewayIP();
-    IPAddress dnsIP(uint8_t dns_no = 0);
-    String getBSSID();
-    int8_t getChannel();
-    int8_t getRSSI();
-    bool getAutoConnect();
-    bool setAutoConnect(bool autoConnect);
-    bool getAutoReconnect();
-    bool setAutoReconnect(bool autoReconnect);
-    bool setHostname(const char* hostname);
-    uint8_t* macAddress(uint8_t* mac);
-    const char* getHostname();
-
-    // AP control
-    bool softAP(const char* ssid, const char* passphrase = NULL, int channel = 1, int ssid_hidden = 0, int max_connection = 4);
-    bool softAPconfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet);
-    bool softAPdisconnect(bool wifioff = false);
-    String softAPmacAddress();
-    uint8_t softAPgetStationNum();
-    IPAddress softAPIP();
-    String softAPSSID() const;
-
-    // Scan
-    int8_t scanNetworks(bool async = false, bool show_hidden = false, bool passive = false, uint32_t max_ms_per_chan = 300);
-    int16_t scanComplete();
-    void scanDelete();
-    String SSID(uint8_t networkItem);
-    wifi_auth_mode_t encryptionType(uint8_t networkItem);
-    int32_t RSSI(uint8_t networkItem);
-    uint8_t* BSSID(uint8_t networkItem);
-    int32_t channel(uint8_t networkItem);
-    bool getNetworkInfo(uint8_t networkItem, String &ssid, uint8_t &encryptionType, int32_t &RSSI, uint8_t* &BSSID, int32_t &channel);
-
-    // Event
-    wifi_err_reason_t disconnectReason(system_event_id_t event_id);
-    void onEvent(system_event_cb_t cbEvent, system_event_id_t event = SYSTEM_EVENT_MAX);
-    system_event_cb_t onEvent(system_event_cb_t cbEvent);
-
-    // Power
-    bool setTxPower(wifi_power_t power);
-    wifi_power_t getTxPower();
-
-    // Sleep
-    bool setSleep(bool enable);
-    bool getSleep();
-
-    // Misc
-    static void persistent(bool persistent);
-    static bool enableSTA(bool enable);
-    static void enableAP(bool enable);
-    static int hostByName(const char* aHostname, IPAddress& aResult);
-    static int hostByName(const char* aHostname, IPAddress& aResult, uint32_t timeout_ms);
-
-    // Status codes
-    static const char* statusToString(wl_status_t status);
-    static const char* eventTypeToString(system_event_id_t event_id);
-
-private:
-    wifi_mode_t _mode;
-    bool _autoReconnect;
-    system_event_cb_t _eventCallback;
-
-    bool initSTA(const char* ssid, const char* passphrase, int32_t channel, const uint8_t* bssid);
-    bool initAP(const char* ssid, const char* passphrase, int channel, int ssid_hidden, int max_connection);
-};
-
-extern WiFiClass WiFi;
-
-// ============================================================
 // Status Codes
 // ============================================================
 typedef enum {
@@ -311,18 +179,18 @@ typedef enum {
 // TX Power Levels
 // ============================================================
 typedef enum {
-    WIFI_POWER_19_5dBm = 78,// 19.5dBm
-    WIFI_POWER_19dBm = 76,// 19dBm
-    WIFI_POWER_18_5dBm = 74,// 18.5dBm
-    WIFI_POWER_17dBm = 68,// 17dBm
-    WIFI_POWER_15dBm = 60,// 15dBm
-    WIFI_POWER_13dBm = 52,// 13dBm
-    WIFI_POWER_11dBm = 44,// 11dBm
-    WIFI_POWER_8_5dBm = 34,// 8.5dBm
-    WIFI_POWER_7dBm = 28,// 7dBm
-    WIFI_POWER_5dBm = 20,// 5dBm
-    WIFI_POWER_2dBm = 8,// 2dBm
-    WIFI_POWER_MINUS_1dBm = -4// -1dBm
+    WIFI_POWER_19_5dBm = 78,
+    WIFI_POWER_19dBm = 76,
+    WIFI_POWER_18_5dBm = 74,
+    WIFI_POWER_17dBm = 68,
+    WIFI_POWER_15dBm = 60,
+    WIFI_POWER_13dBm = 52,
+    WIFI_POWER_11dBm = 44,
+    WIFI_POWER_8_5dBm = 34,
+    WIFI_POWER_7dBm = 28,
+    WIFI_POWER_5dBm = 20,
+    WIFI_POWER_2dBm = 8,
+    WIFI_POWER_MINUS_1dBm = -4
 } wifi_power_t;
 
 #ifdef __cplusplus

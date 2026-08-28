@@ -5,7 +5,7 @@
  * @date 2026-08-27
  *
  * Provides Arduino SPI API wrapper on top of XR871 HAL SPI driver.
- * Supports SPI0 and SPI1 with master mode only.
+ * Supports SPI0 and SPI1_DEV with master mode only.
  */
 
 #ifndef _SPI_XR871_H_
@@ -50,7 +50,7 @@ extern "C" {
 #define SPI0_CLK_PORT  GPIO_PORT_B
 #define SPI0_CLK_PIN   GPIO_PIN_7
 
-// SPI1 pin definitions
+// SPI1_DEV pin definitions
 #define SPI1_CS_PORT   GPIO_PORT_A
 #define SPI1_CS_PIN    GPIO_PIN_3
 #define SPI1_MOSI_PORT GPIO_PORT_A
@@ -166,7 +166,7 @@ private:
 
 // Global SPI object
 extern SPIClass SPI;
-extern SPIClass SPI1;
+extern SPIClass SPI1_DEV;
 
 #ifdef __cplusplus
 }

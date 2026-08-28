@@ -1,0 +1,10 @@
+build/
+XR871SDK/
+*.o
+*.a
+*.elf
+*.bin
+*.lst
+*.map
+.DS_Store
+*~

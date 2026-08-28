@@ -1,58 +1,24 @@
 #
-# Makefile for XR871 Arduino WiFi Example
-# This integrates with the XR871 SDK build system
+# XR871 Arduino Core Makefile
+# Integrates with XR871 SDK build system
 #
 
 # ----------------------------------------------------------------------------
 # Project configuration
 # ----------------------------------------------------------------------------
-PRJ_NAME := xr871_arduino_wifi
-
-# Source files
-SRCS := \
-	Arduino.c \
-	Wire.cpp \
-	SPI.cpp \
-	PWM.cpp \
-	WiFi.cpp \
-	WiFiClient.cpp \
-	WiFiUDP.cpp \
-	WiFi_Station.ino
-
-# Include paths
-INCLUDES := \
-	-I. \
-	-I$(XR871SDK)/include \
-	-I$(XR871SDK)/include/driver \
-	-I$(XR871SDK)/include/driver/chip \
-	-I$(XR871SDK)/include/kernel \
-	-I$(XR871SDK)/include/kernel/os \
-	-I$(XR871SDK)/include/libc \
-	-I$(XR871SDK)/include/net \
-	-I$(XR871SDK)/include/net/wlan \
-	-I$(XR871SDK)/include/net/lwip-1.4.1/src/include \
-	-I$(XR871SDK)/include/net/lwip-1.4.1/src/include/ipv4 \
-	-I$(XR871SDK)/include/net/lwip-1.4.1/src/include/lwip
+PRJ_NAME := xr871_arduino_core
 
 # ----------------------------------------------------------------------------
-# SDK path (modify this to point to your XR871 SDK installation)
+# SDK path
 # ----------------------------------------------------------------------------
-XR871SDK ?= ../03_SDK/xr871sdk
+XR871SDK ?= ./XR871SDK
 
 # ----------------------------------------------------------------------------
-# Toolchain
+# Toolchain (use system arm-none-eabi-gcc)
 # ----------------------------------------------------------------------------
-CC_DIR := $(HOME)/tools/gcc-arm-none-eabi-4_9-2015q2/bin
-CC_PREFIX := $(CC_DIR)/arm-none-eabi-
-
-CC := $(CC_PREFIX)gcc
-CXX := $(CC_PREFIX)g++
-AS := $(CC_PREFIX)as
-LD := $(CC_PREFIX)ld
-AR := $(CC_PREFIX)ar
-OBJCOPY := $(CC_PREFIX)objcopy
-OBJDUMP := $(CC_PREFIX)objdump
-SIZE := $(CC_PREFIX)size
+CC := arm-none-eabi-gcc
+CXX := arm-none-eabi-g++
+AR := arm-none-eabi-ar
 
 # ----------------------------------------------------------------------------
 # Compiler flags
@@ -60,58 +26,77 @@ SIZE := $(CC_PREFIX)size
 CPU := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
 
 CFLAGS := $(CPU) -c -Os -gdwarf-2
-CFLAGS += -Wall -Wextra -Werror=implicit-function-declaration
+CFLAGS += -Wall -Wextra
 CFLAGS += -ffunction-sections -fdata-sections
 CFLAGS += -D__CONFIG_CHIP_XR871 -D__CONFIG_CPU_CM4F -D__CONFIG_OS_FREERTOS
 CFLAGS += -D__CONFIG_LIBC_PRINTF_FLOAT -D__CONFIG_LIBC_WRAP_STDIO
-CFLAGS += -D__CONFIG_ARCH_DUAL_CORE -D__CONFIG_ARCH_APP_CORE
+CFLAGS += -DARDUINO=10819 -DARDUINO_XR871 -DARDUINO_ARCH_XR871
+
+CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++98
+
+# ----------------------------------------------------------------------------
+# Include paths
+# ----------------------------------------------------------------------------
+INCLUDES := \
+	-I. \
+	-I$(XR871SDK)/include \
+	-I$(XR871SDK)/include/driver \
+	-I$(XR871SDK)/include/driver/chip \
+	-I$(XR871SDK)/include/driver/cmsis \
+	-I$(XR871SDK)/include/kernel \
+	-I$(XR871SDK)/include/kernel/os \
+	-I$(XR871SDK)/include/kernel/FreeRTOS \
+	-I$(XR871SDK)/include/kernel/FreeRTOS/portable/GCC/ARM_CM4F \
+	-I$(XR871SDK)/include/libc \
+	-I$(XR871SDK)/include/net \
+	-I$(XR871SDK)/include/net/wlan \
+	-I$(XR871SDK)/include/net/lwip-1.4.1 \
+	-I$(XR871SDK)/include/net/lwip-1.4.1/ipv4 \
+	-I$(XR871SDK)/include/net/lwip-1.4.1/lwip
+
 CFLAGS += $(INCLUDES)
-
-CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions
+CXXFLAGS += $(INCLUDES)
 
 # ----------------------------------------------------------------------------
-# Linker flags
+# Source files
 # ----------------------------------------------------------------------------
-LDFLAGS := $(CPU) -Wl,--gc-sections
-LDFLAGS += -T$(XR871SDK)/project/linker_script/gcc_xr871.ld
-LDFLAGS += -L$(XR871SDK)/lib
-LDFLAGS += -Wl,--whole-archive -lchip -Wl,--no-whole-archive
-LDFLAGS += -los -lconsole -lutil -lc -llwip -lwlan
-LDFLAGS += -lm -lgcc -lc -lstdc++
+C_SRCS := Arduino.c
+CPP_SRCS := String.cpp
 
 # ----------------------------------------------------------------------------
 # Build rules
 # ----------------------------------------------------------------------------
 BUILD_DIR := build
-OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(SRCS:.c=.o)))
-OBJS := $(OBJS:.cpp=.o)
-OBJS := $(OBJS:.ino=.o)
+C_OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(C_SRCS:.c=.o)))
+CPP_OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SRCS:.cpp=.o)))
+ALL_OBJS := $(C_OBJS) $(CPP_OBJS)
 
-.PHONY: all clean
+# Library output
+LIB := $(BUILD_DIR)/lib$(PRJ_NAME).a
 
-all: $(BUILD_DIR)/$(PRJ_NAME).bin
+.PHONY: all clean lib info
+
+all: lib
+
+lib: $(LIB)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
+# Compile C files
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
-	$(CC) $(CFLAGS) $< -o $@
+	@echo "CC  $<"
+	@$(CC) $(CFLAGS) $< -o $@
 
+# Compile C++ files
 $(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)
-	$(CXX) $(CXXFLAGS) $< -o $@
+	@echo "CXX $<"
+	@$(CXX) $(CXXFLAGS) $< -o $@
 
-$(BUILD_DIR)/%.o: %.ino | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -x c $< -o $@
-
-$(BUILD_DIR)/$(PRJ_NAME).elf: $(OBJS)
-	$(CXX) $(LDFLAGS) $(OBJS) -o $@
-	$(SIZE) $@
-
-$(BUILD_DIR)/$(PRJ_NAME).bin: $(BUILD_DIR)/$(PRJ_NAME).elf
-	$(OBJCOPY) -O binary $< $@
-
-$(BUILD_DIR)/$(PRJ_NAME).lst: $(BUILD_DIR)/$(PRJ_NAME).elf
-	$(OBJDUMP) -d $< > $@
+# Create static library
+$(LIB): $(ALL_OBJS)
+	@echo "AR  $@"
+	@$(AR) rcs $@ $^
 
 clean:
 	rm -rf $(BUILD_DIR)
@@ -119,7 +104,8 @@ clean:
 # Print info
 info:
 	@echo "Project: $(PRJ_NAME)"
-	@echo "Sources: $(SRCS)"
 	@echo "SDK Path: $(XR871SDK)"
+	@echo "C sources: $(C_SRCS)"
+	@echo "C++ sources: $(CPP_SRCS)"
 	@echo "CC: $(CC)"
 	@echo "CXX: $(CXX)"

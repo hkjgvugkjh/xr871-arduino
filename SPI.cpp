@@ -12,7 +12,7 @@
 
 // Global SPI objects
 SPIClass SPI;
-SPIClass SPI1;
+SPIClass SPI1_DEV;
 
 // ============================================================
 // SPIClass class implementation
@@ -186,5 +186,5 @@ void spi0Begin() {
  * @brief Initialize SPI1 (for Arduino SPI1)
  */
 void spi1Begin() {
-    SPI1.begin(SPI1, SPI_TCTRL_SS_SEL_SS0);
+    SPI1_DEV.begin(SPI1, SPI_TCTRL_SS_SEL_SS0);
 }
