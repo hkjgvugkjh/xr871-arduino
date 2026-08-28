@@ -11,8 +11,8 @@
       "category": "Contributed",
       "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.1.0/xr871-arduino-1.1.0.zip",
       "archiveFileName": "xr871-arduino-1.1.0.zip",
-      "checksum": "SHA-256:PLACEHOLDER_PLATFORM_SHA",
-      "size": "PLACEHOLDER_PLATFORM_SIZE",
+      "checksum": "SHA-256:b415af5ddb240738d6908c37c5fb14a545e142b2184217bad6fe046e98bd4f35",
+      "size": "94382",
       "boards": [{"name": "XR871 EVB"}],
       "toolsDependencies": [
         {
@@ -36,7 +36,7 @@
             "host": "x86_64-pc-linux-gnu",
             "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.1.0/arm-none-eabi-gcc-13.2.1-linux64.tar.gz",
             "archiveFileName": "arm-none-eabi-gcc-13.2.1-linux64.tar.gz",
-            "size": "65000000",
+            "size": "64646679",
             "checksum": "SHA-256:08e1de401ce85e56a23df506b9ac991588cb63cf814ce39cb7a2f63209b52236"
           }
         ]
@@ -49,7 +49,7 @@
             "host": "x86_64-pc-linux-gnu",
             "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.1.0/xr871-tool-1.0.0-linux64.tar.gz",
             "archiveFileName": "xr871-tool-1.0.0-linux64.tar.gz",
-            "checksum": "SHA-256:bcf030526e6b1c9d210007e85c93fcd7139981bd3db35f9e87d59f265060219f"
+            "checksum": "SHA-256:12294acf6a3099e1382787953234a314c60c4a25cd10dc46f41353287827d861"
           }
         ]
       }

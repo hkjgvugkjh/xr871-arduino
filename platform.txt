@@ -24,11 +24,10 @@ build.link_flags=-T{runtime.platform.path}/SDK/project/linker_script/gcc/xr871/a
 compiler.sdk.path={runtime.platform.path}/SDK/
 
 # ============================================================
-# 烧录工具配置 (xr871_tool)
+# 烧录工具配置 (xr871_tool - 调用原厂phoenixMC)
 # ============================================================
 tools.xr871_tool.path={runtime.tools.xr871_tool.path}
-tools.xr871_tool.cmd=xr871_tool
-tools.xr871_tool.cmd.windows=xr871_tool.exe
+tools.xr871_tool.cmd=python3 {runtime.tools.xr871_tool.path}/flasher.py
 
 # 上传协议
 tools.xr871_tool.upload.protocol=serial
@@ -36,21 +35,16 @@ tools.xr871_tool.upload.params.verbose=-v
 tools.xr871_tool.upload.params.quiet=-q
 
 # 烧录命令
-tools.xr871_tool.upload.pattern="{path}/{cmd}" flash -p "{serial.port}" --baud {upload.speed} -i "{build.path}/{build.project_name}.bin"
+tools.xr871_tool.upload.pattern="{cmd}" "{serial.port}" {upload.speed} "{build.path}/{build.project_name}.bin"
 
 # 擦除命令
-tools.xr871_tool.erase.pattern="{path}/{cmd}" erase -p "{serial.port}" --baud {upload.speed}
+tools.xr871_tool.erase.pattern="{cmd}" "{serial.port}" {upload.speed} --erase
 
 # ============================================================
 # 网络烧录 (OTA)
 # ============================================================
-tools.xr871_tool.network_cmd=xr871_ota
-tools.xr871_tool.upload.network_pattern="{network_cmd}" -i "{serial.port}" -p 8266 -f "{build.path}/{build.project_name}.bin"
-
-# ============================================================
-# 镜像打包Hook (编译后自动调用mkimage)
-# ============================================================
-recipe.hooks.objcopy.postobjcopy.1.pattern="{runtime.platform.path}/tools/xr871_mkimage/mkimage" -c "{runtime.platform.path}/SDK/project/image_cfg/xr871/image_xip.cfg" -o "{build.path}/{build.project_name}_full.bin" -d "{build.path}"
+tools.xr871_tool.network_cmd=python3 {runtime.tools.xr871_tool.path}/flasher.py
+tools.xr871_tool.upload.network_pattern="{network_cmd}" "{serial.port}" 8266 "{build.path}/{build.project_name}.bin"
 
 # ============================================================
 # 内存布局定义 (用于Arduino IDE显示)
