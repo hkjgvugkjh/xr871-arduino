@@ -7,12 +7,12 @@
     "platforms": [{
       "name": "XR871 Arduino",
       "architecture": "arm",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "category": "Contributed",
-      "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.1.0/xr871-arduino-1.1.0.zip",
-      "archiveFileName": "xr871-arduino-1.1.0.zip",
-      "checksum": "SHA-256:b415af5ddb240738d6908c37c5fb14a545e142b2184217bad6fe046e98bd4f35",
-      "size": "94382",
+      "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.2.0/xr871-arduino-1.2.0.zip",
+      "archiveFileName": "xr871-arduino-1.2.0.zip",
+      "checksum": "SHA-256:c01a6315fc5317ae3dc45b78c179387e2111ce0588c0c2b1e84912e7f7c780d3",
+      "size": "63060",
       "boards": [{"name": "XR871 EVB"}],
       "toolsDependencies": [
         {
@@ -23,7 +23,7 @@
         {
           "packager": "xr871",
           "name": "xr871_tool",
-          "version": "1.0.0"
+          "version": "1.2.0"
         }
       ]
     }],
@@ -34,7 +34,7 @@
         "systems": [
           {
             "host": "x86_64-pc-linux-gnu",
-            "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.1.0/arm-none-eabi-gcc-13.2.1-linux64.tar.gz",
+            "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.2.0/arm-none-eabi-gcc-13.2.1-linux64.tar.gz",
             "archiveFileName": "arm-none-eabi-gcc-13.2.1-linux64.tar.gz",
             "size": "64646679",
             "checksum": "SHA-256:08e1de401ce85e56a23df506b9ac991588cb63cf814ce39cb7a2f63209b52236"
@@ -43,13 +43,14 @@
       },
       {
         "name": "xr871_tool",
-        "version": "1.0.0",
+        "version": "1.2.0",
         "systems": [
           {
             "host": "x86_64-pc-linux-gnu",
-            "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.1.0/xr871-tool-1.0.0-linux64.tar.gz",
-            "archiveFileName": "xr871-tool-1.0.0-linux64.tar.gz",
-            "checksum": "SHA-256:12294acf6a3099e1382787953234a314c60c4a25cd10dc46f41353287827d861"
+            "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.2.0/xr871-tool-1.2.0-linux64.tar.gz",
+            "archiveFileName": "xr871-tool-1.2.0-linux64.tar.gz",
+            "checksum": "SHA-256:6e57dedca057561bc09c1253b9da061449125f417efbe66877aee849e81ec309",
+            "size": "11019"
           }
         ]
       }

@@ -24,7 +24,7 @@ build.link_flags=-T{runtime.platform.path}/SDK/project/linker_script/gcc/xr871/a
 compiler.sdk.path={runtime.platform.path}/SDK/
 
 # ============================================================
-# 烧录工具配置 (xr871_tool - 调用原厂phoenixMC)
+# 烧录工具配置 (xr871_tool - Python BROM实现)
 # ============================================================
 tools.xr871_tool.path={runtime.tools.xr871_tool.path}
 tools.xr871_tool.cmd=python3 {runtime.tools.xr871_tool.path}/flasher.py
