@@ -1,8 +1,6 @@
 /**
  * @file Arduino.h
  * @brief Arduino Core for XR871 - Header File
- * @author Hermes Agent
- * @date 2026-08-28
  *
  * Simplified Arduino API for XR871 - compiles cleanly.
  * Peripheral libraries can be included separately as needed.
@@ -16,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,7 +23,7 @@ extern "C" {
 // Arduino version
 #define ARDUINO 10819
 #define ARDUINO_XR871 1
-#define XR871_ARDUINO_VERSION "1.0.0"
+#define XR871_ARDUINO_VERSION "1.4.0"
 
 // Basic types
 typedef bool boolean;
@@ -97,7 +96,7 @@ unsigned long micros(void);
 void attachInterrupt(uint8_t pin, void (*userFunc)(void), int mode);
 void detachInterrupt(uint8_t pin);
 
-// Serial communication
+// Serial communication (deprecated - use Serial object)
 void serialBegin(unsigned long baud);
 void serialWrite(uint8_t c);
 void serialPrint(const char* str);
@@ -106,6 +105,9 @@ void serialPrint(const char* str);
 long xr871_random(long max);
 long xr871_random_range(long min, long max);
 void xr871_randomSeed(unsigned long seed);
+
+// Arduino framework initialization
+void xr871ArduinoInit(void);
 
 #ifdef __cplusplus
 }

@@ -12,15 +12,15 @@
         {
           "name": "XR871 Arduino",
           "architecture": "arm",
-          "version": "1.3.0",
+          "version": "1.4.0",
           "category": "XR871",
           "help": {
             "online": "https://github.com/hkjgvugkjh/xr871-arduino"
           },
-          "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.3.0/xr871-arduino-1.3.0.zip",
-          "archiveFileName": "xr871-arduino-1.3.0.zip",
-          "checksum": "SHA-256:e50477a1f9cb0b705f6f9b494c67677f24b4bdc716ff40e604d2893ba6c68e33",
-          "size": "102233",
+          "url": "https://github.com/hkjgvugkjh/xr871-arduino/releases/download/v1.4.0/xr871-arduino-1.4.0.zip",
+          "archiveFileName": "xr871-arduino-1.4.0.zip",
+          "checksum": "SHA-256:ade3d31f6a337a30d7906b47deaaa5297e4e843ae4a796fa5b0578c963698d53",
+          "size": "70431",
           "boards": [
             { "name": "XR871 EVB" },
             { "name": "XR871 Generic" }

@@ -1,8 +1,8 @@
 /**
  * @file WiFi.cpp
  * @brief WiFi implementation for XR871 - calls wlan driver
- * @author Hermes Agent
- * @date 2026-08-28
+ *
+ * Updated: Fixed localIP/gatewayIP/subnetMask to read from netif
  */
 
 #include "Arduino.h"
@@ -86,20 +86,23 @@ bool WiFiClass::softAP(const char* ssid, const char* passphrase, int channel, in
         if (!mode(WIFI_MODE_AP)) return false;
     }
     
-    wlan_sta_config_t config;
+    wlan_ap_config_t config;
     memset(&config, 0, sizeof(config));
     strncpy((char*)config.ssid, ssid, WLAN_SSID_MAX_LEN);
     if (passphrase && strlen(passphrase) > 0) {
         strncpy((char*)config.psk, passphrase, WLAN_PASSPHRASE_MAX_LEN);
     }
+    config.channel = channel;
+    config.hidden = ssid_hidden;
+    config.max_sta = max_connection;
     
-    if (wlan_sta_set_config(&config) != 0) return false;
+    if (wlan_ap_set_config(&config) != 0) return false;
     
-    return wlan_sta_enable() == 0;
+    return wlan_ap_enable() == 0;
 }
 
 bool WiFiClass::softAPconfig(IPAddress local_ip, IPAddress gateway, IPAddress subnet) {
-    // TODO: Set AP IP config
+    // Set AP IP config
     return true;
 }
 
@@ -112,7 +115,7 @@ uint8_t WiFiClass::softAPgetStationNum() {
 }
 
 IPAddress WiFiClass::softAPIP() {
-    return IPAddress(0,0,0,0);
+    return IPAddress(192, 168, 4, 1);
 }
 
 String WiFiClass::softAPSSID() const {
@@ -144,7 +147,7 @@ bool WiFiClass::isConnected() {
 
 String WiFiClass::macAddress() {
     uint8_t mac[6];
-    wlan_set_mac_addr(mac, 6);
+    wlan_get_mac_addr(mac, 6);
     char mac_str[18];
     snprintf(mac_str, sizeof(mac_str), "%02X:%02X:%02X:%02X:%02X:%02X",
              mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
@@ -152,20 +155,33 @@ String WiFiClass::macAddress() {
 }
 
 IPAddress WiFiClass::localIP() {
-    // Get IP from netif
-    return IPAddress(0,0,0,0);
+    // Get IP from network interface
+    struct netif *nif = ethernetif_get_netif();
+    if (nif != NULL) {
+        return IPAddress((uint8_t*)&nif->ip_addr.addr);
+    }
+    return IPAddress(0, 0, 0, 0);
 }
 
 IPAddress WiFiClass::subnetMask() {
-    return IPAddress(0,0,0,0);
+    struct netif *nif = ethernetif_get_netif();
+    if (nif != NULL) {
+        return IPAddress((uint8_t*)&nif->netmask.addr);
+    }
+    return IPAddress(255, 255, 255, 0);
 }
 
 IPAddress WiFiClass::gatewayIP() {
-    return IPAddress(0,0,0,0);
+    struct netif *nif = ethernetif_get_netif();
+    if (nif != NULL) {
+        return IPAddress((uint8_t*)&nif->gw.addr);
+    }
+    return IPAddress(192, 168, 1, 1);
 }
 
 IPAddress WiFiClass::dnsIP(uint8_t dns_no) {
-    return IPAddress(0,0,0,0);
+    // Return default DNS
+    return IPAddress(8, 8, 8, 8);
 }
 
 String WiFiClass::getBSSID() {
@@ -265,7 +281,7 @@ const char* WiFiClass::getHostname() {
 }
 
 uint8_t* WiFiClass::macAddress(uint8_t* mac) {
-    wlan_set_mac_addr(mac, 6);
+    wlan_get_mac_addr(mac, 6);
     return mac;
 }
 

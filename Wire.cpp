@@ -1,195 +1,148 @@
 /**
  * @file Wire.cpp
- * @brief Arduino Wire (I2C) Library Implementation for XR871
- * @author Hermes Agent
- * @date 2026-08-27
+ * @brief Arduino Wire (I2C) Implementation for XR871
  *
  * Implements Arduino Wire API using XR871 HAL I2C driver.
  */
 
 #include "Wire.h"
+#include "Arduino.h"
 #include <string.h>
 
-// Global Wire objects
+// Global Wire object
 TwoWire Wire;
-TwoWire Wire1;
 
 // ============================================================
-// TwoWire class implementation
+// TwoWire Implementation
 // ============================================================
 
-void TwoWire::begin(I2C_ID i2cID, uint32_t clockFreq) {
-    _i2cID = i2cID;
-    _clockFreq = clockFreq;
-    _initialized = true;
-    _txBufferIndex = 0;
-    _txBufferLength = 0;
-    _rxBufferIndex = 0;
-    _rxBufferLength = 0;
-    _onReceiveCallback = NULL;
-    _onRequestCallback = NULL;
-    
+TwoWire::TwoWire()
+    : _i2c_id(I2C0_ID), _scl_pin(4), _sda_pin(5),
+      _initialized(false), _clock(WIRE_DEFAULT_CLK),
+      _tx_address(0), _tx_index(0),
+      _rx_index(0), _rx_length(0),
+      _onReceiveCallback(NULL), _onRequestCallback(NULL) {
+    memset(_tx_buffer, 0, sizeof(_tx_buffer));
+    memset(_rx_buffer, 0, sizeof(_rx_buffer));
+}
+
+TwoWire::~TwoWire() {
+    end();
+}
+
+void TwoWire::begin(I2C_ID i2c_id, uint8_t scl_pin, uint8_t sda_pin) {
+    if (_initialized) end();
+
+    _i2c_id = i2c_id;
+    _scl_pin = scl_pin;
+    _sda_pin = sda_pin;
+
     // Initialize I2C
-    I2C_InitParam initParam;
-    initParam.addrMode = I2C_ADDR_MODE_7BIT;
-    initParam.clockFreq = clockFreq;
-    HAL_I2C_Init(i2cID, &initParam);
+    I2C_InitParam param;
+    memset(&param, 0, sizeof(param));
+    param.clockFreq = _clock;
+    param.addrMode = I2C_ADDR_MODE_7BIT;
+    param.slaveAddr = 0x00;  // Master mode
+
+    HAL_I2C_Init(_i2c_id, &param);
+
+    _initialized = true;
 }
 
 void TwoWire::end() {
-    if (_initialized) {
-        HAL_I2C_DeInit(_i2cID);
-        _initialized = false;
-    }
+    if (!_initialized) return;
+    HAL_I2C_DeInit(_i2c_id);
+    _initialized = false;
 }
 
 void TwoWire::setClock(uint32_t freq) {
-    _clockFreq = freq;
+    _clock = freq;
     if (_initialized) {
-        HAL_I2C_DeInit(_i2cID);
-        I2C_InitParam initParam;
-        initParam.addrMode = I2C_ADDR_MODE_7BIT;
-        initParam.clockFreq = freq;
-        HAL_I2C_Init(_i2cID, &initParam);
+        HAL_I2C_DeInit(_i2c_id);
+        I2C_InitParam param;
+        memset(&param, 0, sizeof(param));
+        param.clockFreq = _clock;
+        param.addrMode = I2C_ADDR_MODE_7BIT;
+        param.slaveAddr = 0x00;
+        HAL_I2C_Init(_i2c_id, &param);
     }
 }
 
 void TwoWire::beginTransmission(uint8_t address) {
-    _slaveAddress = address;
-    _txBufferIndex = 0;
-    _txBufferLength = 0;
+    _tx_address = address;
+    _tx_index = 0;
 }
 
-void TwoWire::beginTransmission(int address) {
-    beginTransmission((uint8_t)address);
-}
-
-uint8_t TwoWire::endTransmission(void) {
-    return endTransmission(true);
-}
-
-uint8_t TwoWire::endTransmission(uint8_t sendStop) {
+uint8_t TwoWire::endTransmission(bool sendStop) {
     if (!_initialized) return 4;
-    
+
+    // Transmit buffer
     int32_t result = HAL_I2C_Master_Transmit_IT(
-        _i2cID, 
-        _slaveAddress, 
-        _txBuffer, 
-        _txBufferLength
-    );
-    
-    // Reset buffer
-    _txBufferIndex = 0;
-    _txBufferLength = 0;
-    
-    if (result == 0) return 0;  // success
-    if (result == -2) return 2; // NACK on address
-    return 4; // other error
+        _i2c_id, _tx_address, _tx_buffer, (int32_t)_tx_index);
+
+    if (result < 0) return 2;  // NACK
+    return 0;  // Success
 }
 
-uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity, uint8_t sendStop) {
+size_t TwoWire::requestFrom(uint8_t address, size_t quantity, bool sendStop) {
     if (!_initialized) return 0;
-    
-    // Clamp to buffer size
-    if (quantity > WIRE_BUFFER_LENGTH) {
-        quantity = WIRE_BUFFER_LENGTH;
-    }
-    
+    if (quantity > WIRE_BUFFER_SIZE) quantity = WIRE_BUFFER_SIZE;
+
     int32_t result = HAL_I2C_Master_Receive_IT(
-        _i2cID, 
-        address, 
-        _rxBuffer, 
-        quantity
-    );
-    
-    if (result > 0) {
-        _rxBufferLength = result;
-        _rxBufferIndex = 0;
-        return result;
+        _i2c_id, _tx_address, _rx_buffer, (int32_t)quantity);
+
+    if (result <= 0) {
+        _rx_length = 0;
+        return 0;
     }
-    
-    _rxBufferLength = 0;
-    _rxBufferIndex = 0;
-    return 0;
+
+    _rx_length = (uint8_t)result;
+    _rx_index = 0;
+    return (size_t)_rx_length;
 }
 
-uint8_t TwoWire::requestFrom(uint8_t address, uint8_t quantity) {
+size_t TwoWire::requestFrom(uint8_t address, size_t quantity) {
     return requestFrom(address, quantity, true);
 }
 
-uint8_t TwoWire::requestFrom(int address, int quantity) {
-    return requestFrom((uint8_t)address, (uint8_t)quantity, true);
-}
-
-uint8_t TwoWire::requestFrom(int address, int quantity, int sendStop) {
-    return requestFrom((uint8_t)address, (uint8_t)quantity, (uint8_t)sendStop);
-}
-
 size_t TwoWire::write(uint8_t data) {
-    if (_txBufferLength >= WIRE_BUFFER_LENGTH) {
-        return 0; // buffer full
-    }
-    _txBuffer[_txBufferIndex++] = data;
-    _txBufferLength++;
+    if (_tx_index >= WIRE_BUFFER_SIZE) return 0;
+    _tx_buffer[_tx_index++] = data;
     return 1;
 }
 
-size_t TwoWire::write(const uint8_t *data, size_t quantity) {
+size_t TwoWire::write(const uint8_t* data, size_t size) {
     size_t written = 0;
-    for (size_t i = 0; i < quantity; i++) {
-        if (write(data[i]) == 0) break;
-        written++;
+    for (size_t i = 0; i < size; i++) {
+        if (write(data[i]) == 1) written++;
     }
     return written;
 }
 
-int TwoWire::read(void) {
-    if (_rxBufferIndex >= _rxBufferLength) {
-        return -1; // no data available
-    }
-    return _rxBuffer[_rxBufferIndex++];
+int TwoWire::available() {
+    return (int)(_rx_length - _rx_index);
 }
 
-int TwoWire::available(void) {
-    return _rxBufferLength - _rxBufferIndex;
+int TwoWire::read() {
+    if (_rx_index >= _rx_length) return -1;
+    return (int)_rx_buffer[_rx_index++];
 }
 
-int TwoWire::peek(void) {
-    if (_rxBufferIndex >= _rxBufferLength) {
-        return -1; // no data available
-    }
-    return _rxBuffer[_rxBufferIndex];
+int TwoWire::peek() {
+    if (_rx_index >= _rx_length) return -1;
+    return (int)_rx_buffer[_rx_index];
 }
 
-void TwoWire::flush(void) {
-    _txBufferIndex = 0;
-    _txBufferLength = 0;
-    _rxBufferIndex = 0;
-    _rxBufferLength = 0;
+void TwoWire::flush() {
+    _tx_index = 0;
+    _rx_index = 0;
+    _rx_length = 0;
 }
 
-void TwoWire::onReceive(void (*function)(int)) {
-    _onReceiveCallback = function;
+void TwoWire::onReceive(void (*callback)(int)) {
+    _onReceiveCallback = callback;
 }
 
-void TwoWire::onRequest(void (*function)(void)) {
-    _onRequestCallback = function;
-}
-
-// ============================================================
-// C wrapper functions for Arduino compatibility
-// ============================================================
-
-/**
- * @brief Initialize I2C0 master (for Arduino Wire)
- */
-void i2c0Begin(uint32_t clockFreq) {
-    Wire.begin(I2C0_ID, clockFreq);
-}
-
-/**
- * @brief Initialize I2C1 master (for Arduino Wire1)
- */
-void i2c1Begin(uint32_t clockFreq) {
-    Wire1.begin(I2C1_ID, clockFreq);
+void TwoWire::onRequest(void (*callback)(void)) {
+    _onRequestCallback = callback;
 }

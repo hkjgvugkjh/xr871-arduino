@@ -1,4 +1,4 @@
-# XR871 Arduino Boards Configuration v1.3.0
+# XR871 Arduino Boards Configuration v1.4.0
 
 menu.FlashSize=Flash Size
 menu.UploadSpeed=Upload Speed
@@ -21,7 +21,7 @@ xr871_evb.build.core=xr871
 xr871_evb.build.variant=xr871_evb
 
 # Include Arduino libraries
-xr871_evb.build.libraries=ADC,SPI,Wire,WiFi
+xr871_evb.build.libraries=ADC,SPI,Wire,WiFi,Audio,OTA
 
 # Linker script (RAM execution)
 xr871_evb.build.ldscript={runtime.platform.path}/SDK/project/linker_script/gcc/xr871/appos.ld
@@ -43,7 +43,7 @@ xr871_evb.menu.UploadSpeed.921600.upload.speed=921600
 # Flash size options
 xr871_evb.menu.FlashSize.1M.build.flash_size=1M
 
-# XIP support (execute in place from flash)
+# XIP support
 xr871_evb.build.xip=true
 xr871_evb.build.xip_addr=0x10000000
 xr871_evb.build.xip_size=525376
