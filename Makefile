@@ -1,78 +1,92 @@
 #
-# XR871 Arduino Core Makefile
-# Integrates with XR871 SDK build system
+# XR871 Arduino Core Makefile v1.3.0
+# Builds libxr871.a from SDK sources for Arduino IDE integration
 #
 
-# ----------------------------------------------------------------------------
-# Project configuration
-# ----------------------------------------------------------------------------
-PRJ_NAME := xr871_arduino_core
+# Configuration
+XR871SDK ?= $(CURDIR)/SDK
+BUILD_DIR ?= $(CURDIR)/build
+LIB_DIR ?= $(CURDIR)/lib
 
-# ----------------------------------------------------------------------------
-# SDK path
-# ----------------------------------------------------------------------------
-XR871SDK ?= ./XR871SDK
+# Toolchain (from Board Manager)
+TC_PATH ?= $(CURDIR)/tools/arm-none-eabi-gcc/bin
+CC := $(TC_PATH)/arm-none-eabi-gcc
+AR := $(TC_PATH)/arm-none-eabi-ar
 
-# ----------------------------------------------------------------------------
-# Toolchain (use system arm-none-eabi-gcc)
-# ----------------------------------------------------------------------------
-CC := arm-none-eabi-gcc
-CXX := arm-none-eabi-g++
-AR := arm-none-eabi-ar
-
-# ----------------------------------------------------------------------------
-# Compiler flags
-# ----------------------------------------------------------------------------
+# CPU/FPU options
 CPU := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=softfp
 
-CFLAGS := $(CPU) -c -Os -gdwarf-2
-CFLAGS += -Wall -Wextra
-CFLAGS += -ffunction-sections -fdata-sections
+# Compiler flags
+CFLAGS := $(CPU) -Os -w -std=gnu99 -ffunction-sections -fdata-sections
 CFLAGS += -D__CONFIG_CHIP_XR871 -D__CONFIG_CPU_CM4F -D__CONFIG_OS_FREERTOS
+CFLAGS += -D__CONFIG_LIBC_REDEFINE_GCC_INT32_TYPE
 CFLAGS += -D__CONFIG_LIBC_PRINTF_FLOAT -D__CONFIG_LIBC_WRAP_STDIO
-CFLAGS += -DARDUINO=10819 -DARDUINO_XR871 -DARDUINO_ARCH_XR871
 
-CXXFLAGS := $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++98
-
-# ----------------------------------------------------------------------------
 # Include paths
-# ----------------------------------------------------------------------------
-INCLUDES := \
-	-I. \
-	-I$(XR871SDK)/include \
-	-I$(XR871SDK)/include/driver \
-	-I$(XR871SDK)/include/driver/chip \
-	-I$(XR871SDK)/include/driver/cmsis \
-	-I$(XR871SDK)/include/kernel \
-	-I$(XR871SDK)/include/kernel/os \
-	-I$(XR871SDK)/include/kernel/FreeRTOS \
-	-I$(XR871SDK)/include/kernel/FreeRTOS/portable/GCC/ARM_CM4F \
-	-I$(XR871SDK)/include/libc \
-	-I$(XR871SDK)/include/net \
-	-I$(XR871SDK)/include/net/wlan \
-	-I$(XR871SDK)/include/net/lwip-1.4.1 \
-	-I$(XR871SDK)/include/net/lwip-1.4.1/ipv4 \
-	-I$(XR871SDK)/include/net/lwip-1.4.1/lwip
+CFLAGS += -I$(XR871SDK)/include
+CFLAGS += -I$(XR871SDK)/include/driver
+CFLAGS += -I$(XR871SDK)/include/driver/chip
+CFLAGS += -I$(XR871SDK)/include/driver/cmsis
+CFLAGS += -I$(XR871SDK)/include/kernel
+CFLAGS += -I$(XR871SDK)/include/kernel/os
+CFLAGS += -I$(XR871SDK)/include/kernel/os/FreeRTOS
+CFLAGS += -I$(XR871SDK)/include/kernel/FreeRTOS
+CFLAGS += -I$(XR871SDK)/include/kernel/FreeRTOS/portable/GCC/ARM_CM4F
+CFLAGS += -I$(XR871SDK)/include/libc
+CFLAGS += -I$(XR871SDK)/project/common/board
+CFLAGS += -I$(XR871SDK)/project/common/board/xr871_evb_main
 
-CFLAGS += $(INCLUDES)
-CXXFLAGS += $(INCLUDES)
+# SDK source files to compile
+SDK_SRCS := \
+	$(XR871SDK)/src/driver/chip/system_chip.c \
+	$(XR871SDK)/src/driver/chip/hal_gpio.c \
+	$(XR871SDK)/src/driver/chip/hal_uart.c \
+	$(XR871SDK)/src/driver/chip/hal_prcm.c \
+	$(XR871SDK)/src/driver/chip/hal_timer.c \
+	$(XR871SDK)/src/driver/chip/hal_nvic.c \
+	$(XR871SDK)/src/driver/chip/hal_clock.c \
+	$(XR871SDK)/src/driver/chip/hal_flash.c \
+	$(XR871SDK)/src/driver/chip/hal_flashctrl.c \
+	$(XR871SDK)/src/driver/chip/hal_flashcache.c \
+	$(XR871SDK)/src/driver/chip/hal_global.c \
+	$(XR871SDK)/src/driver/chip/hal_wdg.c \
+	$(XR871SDK)/src/driver/chip/hal_pwm.c \
+	$(XR871SDK)/src/driver/chip/hal_spi.c \
+	$(XR871SDK)/src/driver/chip/hal_i2c.c \
+	$(XR871SDK)/src/driver/chip/hal_i2s.c \
+	$(XR871SDK)/src/driver/chip/hal_dmic.c \
+	$(XR871SDK)/src/driver/chip/hal_adc.c \
+	$(XR871SDK)/src/driver/chip/hal_dma.c \
+	$(XR871SDK)/src/driver/chip/hal_crypto.c \
+	$(XR871SDK)/src/driver/chip/hal_efuse.c \
+	$(XR871SDK)/src/driver/chip/hal_csi.c \
+	$(XR871SDK)/src/driver/chip/hal_irrx.c \
+	$(XR871SDK)/src/driver/chip/hal_irtx.c \
+	$(XR871SDK)/src/driver/chip/hal_mbox.c \
+	$(XR871SDK)/src/driver/chip/hal_spinlock.c \
+	$(XR871SDK)/src/driver/chip/hal_swd.c \
+	$(XR871SDK)/src/driver/chip/hal_util.c \
+	$(XR871SDK)/src/driver/chip/hal_wakeup.c \
+	$(XR871SDK)/src/driver/chip/hal_xip.c \
+	$(XR871SDK)/src/driver/chip/flashchip/flash_chip.c \
+	$(XR871SDK)/src/driver/chip/flashchip/flash_default.c \
+	$(XR871SDK)/src/libc/wrap_stdio.c \
+	$(XR871SDK)/src/libc/wrap_malloc.c \
+	$(XR871SDK)/src/libc/wrap_memmove.c \
+	$(XR871SDK)/src/libc/wrap_memset.c
 
-# ----------------------------------------------------------------------------
-# Source files
-# ----------------------------------------------------------------------------
-C_SRCS := Arduino.c
-CPP_SRCS := String.cpp
+# Filter existing sources
+SDK_SRCS := $(wildcard $(SDK_SRCS))
 
-# ----------------------------------------------------------------------------
-# Build rules
-# ----------------------------------------------------------------------------
-BUILD_DIR := build
-C_OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(C_SRCS:.c=.o)))
-CPP_OBJS := $(addprefix $(BUILD_DIR)/,$(notdir $(CPP_SRCS:.cpp=.o)))
-ALL_OBJS := $(C_OBJS) $(CPP_OBJS)
+# Object files
+SDK_OBJS := $(patsubst $(XR871SDK)/src/%.c,$(BUILD_DIR)/%.o,$(SDK_SRCS))
 
-# Library output
-LIB := $(BUILD_DIR)/lib$(PRJ_NAME).a
+# Output library
+LIB := $(LIB_DIR)/libxr871.a
+
+# ============================================================
+# Targets
+# ============================================================
 
 .PHONY: all clean lib info
 
@@ -81,31 +95,29 @@ all: lib
 lib: $(LIB)
 
 $(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIR)/driver/chip/flashchip
+	@mkdir -p $(BUILD_DIR)/libc
 
-# Compile C files
-$(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
+$(LIB_DIR):
+	@mkdir -p $(LIB_DIR)
+
+# Compile SDK C files
+$(BUILD_DIR)/%.o: $(XR871SDK)/src/%.c | $(BUILD_DIR)
 	@echo "CC  $<"
-	@$(CC) $(CFLAGS) $< -o $@
-
-# Compile C++ files
-$(BUILD_DIR)/%.o: %.cpp | $(BUILD_DIR)
-	@echo "CXX $<"
-	@$(CXX) $(CXXFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) -c $< -o $@ 2>&1 | grep -v "^$$" | head -5
 
 # Create static library
-$(LIB): $(ALL_OBJS)
+$(LIB): $(SDK_OBJS) | $(LIB_DIR)
 	@echo "AR  $@"
 	@$(AR) rcs $@ $^
+	@echo "Built: $$(ls -la $@ | awk '{print $$5, $$9}')"
 
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) $(LIB_DIR)
 
-# Print info
 info:
-	@echo "Project: $(PRJ_NAME)"
-	@echo "SDK Path: $(XR871SDK)"
-	@echo "C sources: $(C_SRCS)"
-	@echo "C++ sources: $(CPP_SRCS)"
-	@echo "CC: $(CC)"
-	@echo "CXX: $(CXX)"
+	@echo "XR871 Arduino Core Build"
+	@echo "SDK: $(XR871SDK)"
+	@echo "CC:  $(CC)"
+	@echo "Sources: $(words $(SDK_SRCS)) files"
+	@echo "Output: $(LIB)"

@@ -2,6 +2,7 @@ build/
 XR871SDK/
 *.o
 *.a
+!lib/libxr871.a
 *.elf
 *.bin
 *.lst
