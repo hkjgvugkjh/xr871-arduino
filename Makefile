@@ -1,5 +1,5 @@
 #
-# XR871 Arduino Core Makefile v1.4.0
+# XR871 Arduino Core Makefile v1.5.0
 # Builds libxr871.a from SDK sources and Arduino core libraries
 #
 
@@ -92,9 +92,13 @@ ARDUINO_CORE_SRCS := \
 	$(CURDIR)/SPI.cpp \
 	$(CURDIR)/ADC.cpp \
 	$(CURDIR)/WiFi.cpp \
+	$(CURDIR)/WiFiClient.cpp \
+	$(CURDIR)/WiFiServer.cpp \
 	$(CURDIR)/Audio.cpp \
 	$(CURDIR)/OTA.cpp \
-	$(CURDIR)/String.cpp
+	$(CURDIR)/String.cpp \
+	$(CURDIR)/PWM.cpp \
+	$(CURDIR)/Camera.cpp
 
 # Object files
 SDK_OBJS := $(patsubst $(XR871SDK)/src/%.c,$(BUILD_DIR)/sdk/%.o,$(SDK_SRCS))

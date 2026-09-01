@@ -1,8 +1,8 @@
 /**
  * @file Camera.cpp
  * @brief ESP32 Compatible Camera Implementation for XR871
- * @author Hermes Agent
- * @date 2026-08-27
+ *
+ * Updated to use actual HAL_CSI driver functions.
  */
 
 #include "Camera.h"
@@ -66,7 +66,6 @@ bool Camera::begin(framesize_t framesize, pixformat_t format) {
 }
 
 bool Camera::reset() {
-    // Reset camera settings
     setBrightness(0);
     setContrast(0);
     setSaturation(0);
@@ -78,6 +77,7 @@ void Camera::end() {
     if (_initialized) {
         stopStream();
         freeFrameBuffer();
+        HAL_CSI_DeInit();
         _initialized = false;
     }
 }
@@ -90,8 +90,9 @@ uint8_t* Camera::capture(int timeout) {
     if (!_initialized || _capturing) return NULL;
     
     _capturing = true;
-    // Trigger CSI capture
-    // HAL_CSI_Start();
+    
+    // Start CSI capture in still mode
+    HAL_CSI_Capture_Enable(CSI_STILL_MODE, CSI_ENABLE);
     
     // Wait for capture complete (simplified)
     delay(100);
@@ -170,27 +171,27 @@ void Camera::setVFlip(bool vflip) {
 }
 
 void Camera::setExposure(int exposure) {
-    // TODO
+    // TODO: Implement via sensor registers
 }
 
 void Camera::setGain(int gain) {
-    // TODO
+    // TODO: Implement via sensor registers
 }
 
 void Camera::setWhiteBalance(bool enable) {
-    // TODO
+    // TODO: Implement via sensor registers
 }
 
 void Camera::setAwbGain(bool enable) {
-    // TODO
+    // TODO: Implement via sensor registers
 }
 
 void Camera::setWbMode(int mode) {
-    // TODO
+    // TODO: Implement via sensor registers
 }
 
 void Camera::setSpecialEffect(int effect) {
-    // TODO
+    // TODO: Implement via sensor registers
 }
 
 void Camera::setWPC(bool enable) {
@@ -210,7 +211,7 @@ void Camera::setAELevel(int level) {
 }
 
 void Camera::setDenoise(int level) {
-    // TODO
+    // TODO: Implement via sensor registers
 }
 
 bool Camera::isInitialized() {
@@ -228,11 +229,14 @@ camera_pid_t Camera::getPID() {
 bool Camera::startStream() {
     if (!_initialized || _streaming) return false;
     _streaming = true;
+    // Enable video mode continuous capture
+    HAL_CSI_Capture_Enable(CSI_VIDEO_MODE, CSI_ENABLE);
     return true;
 }
 
 bool Camera::stopStream() {
     _streaming = false;
+    HAL_CSI_Capture_Enable(CSI_STILL_MODE, CSI_DISABLE);
     return true;
 }
 
@@ -241,7 +245,6 @@ bool Camera::isStreaming() {
 }
 
 bool Camera::allocateFrameBuffer() {
-    // Calculate frame size based on resolution and format
     switch (_config.frame_size) {
         case FRAMESIZE_QVGA: _width = 320; _height = 240; break;
         case FRAMESIZE_CIF: _width = 352; _height = 288; break;
@@ -257,7 +260,7 @@ bool Camera::allocateFrameBuffer() {
     
     int bpp = 2; // Default RGB565
     if (_config.pixel_format == PIXFORMAT_JPEG) {
-        _frameSize = (_width * _height) / 10; // Approximate JPEG size
+        _frameSize = (_width * _height) / 10;
     } else if (_config.pixel_format == PIXFORMAT_GRAYSCALE) {
         bpp = 1;
         _frameSize = _width * _height * bpp;
@@ -290,9 +293,31 @@ void Camera::updateResolution() {
 }
 
 bool Camera::initCSI() {
-    // Initialize CSI interface
-    CSI_InitParam csiParam;
-    // Configure CSI pins, clock, etc.
+    // Initialize CSI interface with proper clock and sync config
+    CSI_Config csiConfig;
+    csiConfig.src_Clk.clk = CCM_AHB_PERIPH_CLK_SRC_HOSC;
+    csiConfig.src_Clk.divN = CCM_PERIPH_CLK_DIV_N_1;
+    csiConfig.src_Clk.divM = CCM_PERIPH_CLK_DIV_M_1;
+    
+    HAL_Status status = HAL_CSI_Config(&csiConfig);
+    if (status != HAL_OK) return false;
+    
+    // Configure sync signal polarity
+    CSI_Sync_Signal syncSignal;
+    syncSignal.vsync = CSI_NEGATIVE;
+    syncSignal.herf = CSI_POSITIVE;
+    syncSignal.p_Clk = CSI_POSITIVE;
+    HAL_CSI_Sync_Signal_Polarity_Cfg(&syncSignal);
+    
+    // Set picture size
+    CSI_Picture_Size picSize;
+    picSize.hor_start = 0;
+    picSize.hor_len = (uint16_t)(_width * 2); // RGB565 = 2 bytes per pixel
+    HAL_CSI_Set_Picture_Size(&picSize);
+    
+    // Enable CSI module
+    HAL_CSI_Moudle_Enalbe(CSI_ENABLE);
+    
     return true;
 }
 

@@ -1,4 +1,4 @@
-# XR871 Arduino Boards Configuration v1.4.0
+# XR871 Arduino Boards Configuration v1.5.0
 
 menu.FlashSize=Flash Size
 menu.UploadSpeed=Upload Speed

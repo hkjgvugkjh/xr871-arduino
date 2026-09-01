@@ -1,10 +1,9 @@
 /**
  * @file PWM.cpp
  * @brief Arduino PWM Library Implementation for XR871
- * @author Hermes Agent
- * @date 2026-08-27
  *
- * Implements Arduino analogWrite PWM support using XR871 HAL PWM driver.
+ * Implements extended PWM control via pwmBegin/pwmSetDuty etc.
+ * Note: analogWrite is defined in Arduino.c as the core Arduino API.
  */
 
 #include "PWM.h"
@@ -22,15 +21,14 @@ typedef struct {
 } PWM_PinMap;
 
 static const PWM_PinMap g_pwmPinMap[] = {
-    // Arduino pin, PWM channel, PWM group
-    {8,  PWM_GROUP0_CH0, PWM_GROUP_0},  // PA8
-    {9,  PWM_GROUP0_CH1, PWM_GROUP_0},  // PA9
-    {10, PWM_GROUP1_CH2, PWM_GROUP_1},  // PA10
-    {11, PWM_GROUP1_CH3, PWM_GROUP_1},  // PA11
-    {12, PWM_GROUP2_CH4, PWM_GROUP_2},  // PA12
-    {13, PWM_GROUP2_CH5, PWM_GROUP_2},  // PA13
-    {14, PWM_GROUP3_CH6, PWM_GROUP_3},  // PA14
-    {15, PWM_GROUP3_CH7, PWM_GROUP_3},  // PA15
+    {8,  PWM_GROUP0_CH0, PWM_GROUP_0},
+    {9,  PWM_GROUP0_CH1, PWM_GROUP_0},
+    {10, PWM_GROUP1_CH2, PWM_GROUP_1},
+    {11, PWM_GROUP1_CH3, PWM_GROUP_1},
+    {12, PWM_GROUP2_CH4, PWM_GROUP_2},
+    {13, PWM_GROUP2_CH5, PWM_GROUP_2},
+    {14, PWM_GROUP3_CH6, PWM_GROUP_3},
+    {15, PWM_GROUP3_CH7, PWM_GROUP_3},
 };
 
 // ============================================================
@@ -40,22 +38,18 @@ static const PWM_PinMap g_pwmPinMap[] = {
 int pwmBegin(PWM_CH_ID channel, uint32_t frequency) {
     if (channel >= PWM_CH_NUM) return -1;
     
-    // Initialize PWM if not already done
     if (!g_pwmInitialized) {
         memset(g_pwmChannels, 0, sizeof(g_pwmChannels));
         g_pwmInitialized = true;
     }
     
-    // Determine group from channel
     PWM_GROUP_ID group = (PWM_GROUP_ID)(channel / 2);
     
-    // Configure group clock
     PWM_ClkParam clkParam;
-    clkParam.clk = PWM_CLK_APB1;  // Use APB1 clock
+    clkParam.clk = PWM_CLK_APB1;
     clkParam.div = PWM_SRC_CLK_DIV_1;
     HAL_PWM_GroupClkCfg(group, &clkParam);
     
-    // Initialize channel
     PWM_ChInitParam chParam;
     chParam.mode = PWM_CYCLE_MODE;
     chParam.polarity = PWM_HIGHLEVE;
@@ -65,7 +59,6 @@ int pwmBegin(PWM_CH_ID channel, uint32_t frequency) {
         return -1;
     }
     
-    // Store channel info
     g_pwmChannels[channel].channel = channel;
     g_pwmChannels[channel].group = group;
     g_pwmChannels[channel].frequency = frequency;
@@ -77,44 +70,33 @@ int pwmBegin(PWM_CH_ID channel, uint32_t frequency) {
 
 void pwmEnd(PWM_CH_ID channel) {
     if (channel >= PWM_CH_NUM) return;
-    
     HAL_PWM_ChDeinit(channel);
     g_pwmChannels[channel].enabled = false;
 }
 
 void pwmSetDuty(PWM_CH_ID channel, uint16_t duty) {
     if (channel >= PWM_CH_NUM) return;
-    
     HAL_PWM_ChSetDutyRatio(channel, duty);
     g_pwmChannels[channel].duty = duty;
 }
 
 void pwmSetDutyPercent(PWM_CH_ID channel, float percent) {
     if (channel >= PWM_CH_NUM) return;
-    
-    // Clamp to 0-100%
     if (percent < 0.0f) percent = 0.0f;
     if (percent > 100.0f) percent = 100.0f;
-    
     uint16_t duty = (uint16_t)(percent * 65535.0f / 100.0f);
     pwmSetDuty(channel, duty);
 }
 
 void pwmSetFrequency(PWM_CH_ID channel, uint32_t frequency) {
     if (channel >= PWM_CH_NUM) return;
-    
-    // Deinit and reinit with new frequency
     HAL_PWM_ChDeinit(channel);
-    
     PWM_ChInitParam chParam;
     chParam.mode = PWM_CYCLE_MODE;
     chParam.polarity = PWM_HIGHLEVE;
     chParam.hz = frequency;
     HAL_PWM_ChInit(channel, &chParam);
-    
     g_pwmChannels[channel].frequency = frequency;
-    
-    // Re-enable if it was enabled
     if (g_pwmChannels[channel].enabled) {
         HAL_PWM_EnableCh(channel, PWM_CYCLE_MODE, 1);
     }
@@ -122,14 +104,12 @@ void pwmSetFrequency(PWM_CH_ID channel, uint32_t frequency) {
 
 void pwmEnable(PWM_CH_ID channel) {
     if (channel >= PWM_CH_NUM) return;
-    
     HAL_PWM_EnableCh(channel, PWM_CYCLE_MODE, 1);
     g_pwmChannels[channel].enabled = true;
 }
 
 void pwmDisable(PWM_CH_ID channel) {
     if (channel >= PWM_CH_NUM) return;
-    
     HAL_PWM_EnableCh(channel, PWM_CYCLE_MODE, 0);
     g_pwmChannels[channel].enabled = false;
 }
@@ -150,28 +130,4 @@ uint8_t pwmChannelToPin(PWM_CH_ID channel) {
         }
     }
     return 0xFF;
-}
-
-// ============================================================
-// Arduino analogWrite compatibility
-// ============================================================
-
-/**
- * @brief Arduino analogWrite function
- * @param pin Arduino pin number
- * @param val 0-255 (8-bit resolution)
- */
-void analogWrite(uint8_t pin, int val) {
-    PWM_CH_ID channel = pinToPWMChannel(pin);
-    if (channel == PWM_CH_NULL) return;
-    
-    // Initialize PWM if not already done
-    if (!g_pwmChannels[channel].enabled) {
-        pwmBegin(channel, PWM_DEFAULT_FREQ);
-    }
-    
-    // Convert 8-bit (0-255) to 16-bit (0-65535)
-    uint16_t duty = (uint16_t)(val * 65535 / 255);
-    pwmSetDuty(channel, duty);
-    pwmEnable(channel);
 }

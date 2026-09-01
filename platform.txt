@@ -1,4 +1,4 @@
-# XR871 Arduino Platform Configuration v1.4.0
+# XR871 Arduino Platform Configuration v1.5.0
 # Optimized for Arduino IDE build system
 
 # ============================================================
